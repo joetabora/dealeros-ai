@@ -1,4 +1,4 @@
-import { MarketingCalendarView } from "@/components/calendar/marketing-calendar-view";
+import { CalendarWorkspace } from "@/components/calendar/calendar-workspace";
 import { PageContainer, PageHeader } from "@/components/layout/page-shell";
 import { listScheduledActions } from "@/lib/scheduling/repository";
 import { requireSession } from "@/lib/auth/session";
@@ -19,9 +19,9 @@ export default async function CalendarPage() {
     <PageContainer>
       <PageHeader
         title="Marketing Calendar"
-        description="Every campaign, event, and one-click marketing run is automatically scheduled — platform, timing, and content ready to publish."
+        description="Scheduled marketing auto-executes across Meta, SMS, and email when due — generate, schedule, and publish without manual posting."
       />
-      <MarketingCalendarView actions={actions} />
+      <CalendarWorkspace initialActions={actions} />
     </PageContainer>
   );
 }

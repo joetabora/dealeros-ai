@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type {
+  ExecutionStatus,
+  ScheduledContentType,
   ScheduledMarketingAction,
   ScheduledPlatform,
-  ScheduledContentType,
   ScheduledStatus,
 } from "@/types/scheduling";
 
@@ -17,6 +19,9 @@ type ScheduledActionRow = {
   content: string;
   scheduled_for: string;
   status: string;
+  execution_status: string;
+  executed_at: string | null;
+  provider_response: Record<string, unknown> | null;
   created_at: string;
 };
 
@@ -43,8 +48,20 @@ function mapRow(row: ScheduledActionRow): ScheduledMarketingAction {
     content: row.content,
     scheduledFor: row.scheduled_for,
     status: row.status as ScheduledStatus,
+    executionStatus: row.execution_status as ExecutionStatus,
+    executedAt: row.executed_at,
+    providerResponse: row.provider_response,
     createdAt: row.created_at,
   };
+}
+
+async function getClient(useAdmin: boolean) {
+  if (useAdmin) {
+    const admin = createAdminClient();
+    if (admin) return admin;
+  }
+
+  return createClient();
 }
 
 export async function listScheduledActions(
@@ -57,6 +74,45 @@ export async function listScheduledActions(
     .select("*")
     .order("scheduled_for", { ascending: true })
     .limit(limit);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data as ScheduledActionRow[]).map(mapRow);
+}
+
+export async function listDuePendingActions({
+  userId,
+  limit = 50,
+  includeFuture = false,
+  useAdmin = false,
+}: {
+  userId?: string;
+  limit?: number;
+  includeFuture?: boolean;
+  useAdmin?: boolean;
+} = {}): Promise<ScheduledMarketingAction[]> {
+  const supabase = await getClient(useAdmin);
+  const now = new Date().toISOString();
+
+  let query = supabase
+    .from("scheduled_marketing_actions")
+    .select("*")
+    .eq("status", "pending")
+    .eq("execution_status", "pending")
+    .order("scheduled_for", { ascending: true })
+    .limit(limit);
+
+  if (!includeFuture) {
+    query = query.lte("scheduled_for", now);
+  }
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -86,6 +142,7 @@ export async function insertScheduledActions({
     content: action.content,
     scheduled_for: action.scheduledFor,
     status: action.status ?? "pending",
+    execution_status: "pending",
   }));
 
   const { data, error } = await supabase
@@ -98,4 +155,71 @@ export async function insertScheduledActions({
   }
 
   return (data as ScheduledActionRow[]).map(mapRow);
+}
+
+export async function markActionExecutionSent({
+  actionId,
+  providerMessageId,
+  providerResponse,
+  simulated = false,
+  useAdmin = false,
+}: {
+  actionId: string;
+  providerMessageId?: string;
+  providerResponse: Record<string, unknown>;
+  simulated?: boolean;
+  useAdmin?: boolean;
+}) {
+  const supabase = await getClient(useAdmin);
+  const executedAt = new Date().toISOString();
+
+  const { error } = await supabase
+    .from("scheduled_marketing_actions")
+    .update({
+      status: "sent",
+      execution_status: "sent",
+      executed_at: executedAt,
+      provider_response: {
+        ...providerResponse,
+        providerMessageId,
+        simulated,
+      },
+    })
+    .eq("id", actionId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function markActionExecutionFailed({
+  actionId,
+  error: failureMessage,
+  providerResponse,
+  useAdmin = false,
+}: {
+  actionId: string;
+  error: string;
+  providerResponse: Record<string, unknown>;
+  useAdmin?: boolean;
+}) {
+  const supabase = await getClient(useAdmin);
+  const executedAt = new Date().toISOString();
+
+  const { error } = await supabase
+    .from("scheduled_marketing_actions")
+    .update({
+      status: "failed",
+      execution_status: "failed",
+      executed_at: executedAt,
+      provider_response: {
+        ...providerResponse,
+        error: failureMessage,
+      },
+    })
+    .eq("id", actionId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }

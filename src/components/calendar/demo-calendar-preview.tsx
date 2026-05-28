@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { CalendarRange } from "lucide-react";
+import { CalendarRange, Sparkles } from "lucide-react";
 
 import { MarketingCalendarView } from "@/components/calendar/marketing-calendar-view";
 import { previewDemoScheduleAction } from "@/lib/scheduling/demo-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DEMO_DEALERSHIPS,
-} from "@/config/demo-dealerships";
+import { DEMO_DEALERSHIPS } from "@/config/demo-dealerships";
 import type { ScheduledMarketingAction } from "@/types/scheduling";
 
 type DemoCalendarPreviewProps = {
@@ -23,12 +21,15 @@ export function DemoCalendarPreview({
     initialDealershipId ?? DEMO_DEALERSHIPS[0]!.id,
   );
   const [actions, setActions] = useState<ScheduledMarketingAction[]>([]);
+  const [simulatedIds, setSimulatedIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function loadPreview(dealershipId: string) {
     startTransition(async () => {
       setError(null);
+      setSimulatedIds(new Set());
+
       const result = await previewDemoScheduleAction(dealershipId);
 
       if (result.error || !result.actions) {
@@ -39,6 +40,10 @@ export function DemoCalendarPreview({
 
       setActions(result.actions);
     });
+  }
+
+  function handleSimulateLive() {
+    setSimulatedIds(new Set(actions.map((action) => action.id)));
   }
 
   useEffect(() => {
@@ -54,19 +59,29 @@ export function DemoCalendarPreview({
             Campaign Timeline Preview
           </h1>
           <p className="text-sm text-muted-foreground">
-            Simulated schedule — no posts are sent. See how marketing unfolds
-            automatically.
+            Simulated schedule — no posts are sent. Watch marketing go live
+            instantly.
           </p>
         </div>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={isPending}
-          onClick={() => loadPreview(selectedId)}
-        >
-          <CalendarRange />
-          Refresh preview
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={isPending || actions.length === 0}
+            onClick={() => loadPreview(selectedId)}
+          >
+            <CalendarRange />
+            Refresh preview
+          </Button>
+          <Button
+            type="button"
+            disabled={isPending || actions.length === 0}
+            onClick={handleSimulateLive}
+          >
+            <Sparkles />
+            Simulate going live
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -92,9 +107,20 @@ export function DemoCalendarPreview({
         </div>
       ) : null}
 
+      {simulatedIds.size > 0 ? (
+        <div
+          role="status"
+          className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400"
+        >
+          {simulatedIds.size} simulated post{simulatedIds.size === 1 ? "" : "s"}{" "}
+          marked as sent — your marketing is live (demo mode).
+        </div>
+      ) : null}
+
       <MarketingCalendarView
         actions={actions}
         demoMode
+        simulatedIds={simulatedIds}
         emptyMessage="Generating preview timeline..."
       />
     </div>

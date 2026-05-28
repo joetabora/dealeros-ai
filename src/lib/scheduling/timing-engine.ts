@@ -14,10 +14,16 @@ import type {
   ScheduledPlatform,
 } from "@/types/scheduling";
 
-type ResolvedInsert = Omit<
-  ScheduledMarketingAction,
-  "id" | "userId" | "createdAt" | "status"
-> & { status: "pending" };
+type ResolvedInsert = {
+  dealershipName: string;
+  campaignId: string | null;
+  eventId: string | null;
+  platform: ScheduledPlatform;
+  contentType: ScheduledContentType;
+  content: string;
+  scheduledFor: string;
+  status: "pending";
+};
 
 function shouldSkipSms(daysOffset: number) {
   return !SMS_ALLOWED_OFFSETS.has(daysOffset);

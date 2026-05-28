@@ -12,12 +12,14 @@ type MarketingCalendarViewProps = {
   actions: ScheduledMarketingAction[];
   demoMode?: boolean;
   emptyMessage?: string;
+  simulatedIds?: Set<string>;
 };
 
 export function MarketingCalendarView({
   actions,
   demoMode = false,
   emptyMessage = "Scheduled marketing actions will appear here after you generate a campaign, schedule an event, or run the one-click marketing engine.",
+  simulatedIds,
 }: MarketingCalendarViewProps) {
   const groups = groupActionsByDate(actions);
 
@@ -52,6 +54,7 @@ export function MarketingCalendarView({
                 key={action.id}
                 action={action}
                 demoMode={demoMode}
+                simulated={simulatedIds?.has(action.id)}
               />
             ))}
           </div>

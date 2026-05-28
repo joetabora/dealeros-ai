@@ -126,6 +126,9 @@ export async function buildDemoPreviewSchedule({
     content: action.content,
     scheduledFor: action.scheduledFor,
     status: "pending" as const,
+    executionStatus: "pending" as const,
+    executedAt: null,
+    providerResponse: null,
     createdAt: now,
   }));
 }

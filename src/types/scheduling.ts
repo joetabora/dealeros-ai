@@ -16,9 +16,15 @@ export const SCHEDULED_CONTENT_TYPES = [
 
 export type ScheduledContentType = (typeof SCHEDULED_CONTENT_TYPES)[number];
 
-export const SCHEDULED_STATUSES = ["pending", "sent", "skipped"] as const;
+export const SCHEDULED_STATUSES = ["pending", "sent", "skipped", "failed"] as const;
 
 export type ScheduledStatus = (typeof SCHEDULED_STATUSES)[number];
+
+export const EXECUTION_STATUSES = ["pending", "sent", "failed"] as const;
+
+export type ExecutionStatus = (typeof EXECUTION_STATUSES)[number];
+
+export type ProviderResponse = Record<string, unknown>;
 
 export type ScheduledMarketingAction = {
   id: string;
@@ -31,6 +37,9 @@ export type ScheduledMarketingAction = {
   content: string;
   scheduledFor: string;
   status: ScheduledStatus;
+  executionStatus: ExecutionStatus;
+  executedAt: string | null;
+  providerResponse: ProviderResponse | null;
   createdAt: string;
 };
 
@@ -65,4 +74,11 @@ export const STATUS_LABELS: Record<ScheduledStatus, string> = {
   pending: "Pending",
   sent: "Sent",
   skipped: "Skipped",
+  failed: "Failed",
+};
+
+export const EXECUTION_STATUS_LABELS: Record<ExecutionStatus, string> = {
+  pending: "Pending",
+  sent: "Sent",
+  failed: "Failed",
 };
