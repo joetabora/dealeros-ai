@@ -72,6 +72,7 @@ export async function captureLead(input: LeadCaptureInput) {
 
   const lead = await insertLead({
     ...input,
+    dealershipId: input.dealershipId,
     interestType,
   });
 
@@ -86,6 +87,7 @@ export async function captureLead(input: LeadCaptureInput) {
   if (!existingPipeline) {
     await insertPipelineFromLead({
       userId: input.userId,
+      dealershipId: input.dealershipId,
       lead,
       intentLevel: input.intentLevel ?? inferIntentLevel(input),
       engagementType: input.engagementType,
@@ -163,12 +165,14 @@ export async function captureLeadFromExecution({
 export async function simulateSmsResponseLead({
   userId,
   dealershipName,
+  dealershipId,
   keyword,
   campaignId,
   eventId,
 }: {
   userId: string;
   dealershipName: string;
+  dealershipId?: string;
   keyword: string;
   campaignId?: string | null;
   eventId?: string | null;
@@ -184,6 +188,7 @@ export async function simulateSmsResponseLead({
   return captureLead({
     userId,
     dealershipName,
+    dealershipId,
     campaignId,
     eventId,
     source: "sms",
@@ -198,11 +203,13 @@ export async function simulateSmsResponseLead({
 export async function simulateEventRsvpLead({
   userId,
   dealershipName,
+  dealershipId,
   eventId,
   campaignId,
 }: {
   userId: string;
   dealershipName: string;
+  dealershipId?: string;
   eventId: string;
   campaignId?: string | null;
 }) {
@@ -212,6 +219,7 @@ export async function simulateEventRsvpLead({
   return captureLead({
     userId,
     dealershipName,
+    dealershipId,
     campaignId,
     eventId,
     source: "event",
@@ -227,11 +235,13 @@ export async function simulateEventRsvpLead({
 export async function simulateEmailEngagementLead({
   userId,
   dealershipName,
+  dealershipId,
   campaignId,
   engagementType = "click",
 }: {
   userId: string;
   dealershipName: string;
+  dealershipId?: string;
   campaignId?: string | null;
   engagementType?: "click" | "reply";
 }) {
@@ -241,6 +251,7 @@ export async function simulateEmailEngagementLead({
   return captureLead({
     userId,
     dealershipName,
+    dealershipId,
     campaignId,
     source: "email",
     interestType: "sales",

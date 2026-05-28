@@ -68,10 +68,12 @@ export async function getMarketingCampaign(
 
 export async function createMarketingCampaign({
   userId,
+  dealershipId,
   input,
   outputs,
 }: {
   userId: string;
+  dealershipId?: string;
   input: MarketingCampaignInput;
   outputs: FullMarketingCampaignOutput;
 }): Promise<MarketingCampaign> {
@@ -81,6 +83,7 @@ export async function createMarketingCampaign({
     .from("marketing_campaigns")
     .insert({
       user_id: userId,
+      dealership_id: dealershipId ?? null,
       dealership_name: input.dealershipName,
       campaign_type: input.campaignType,
       event_or_offer_name: input.eventOrOfferName,

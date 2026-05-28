@@ -2,7 +2,9 @@ import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { resolveTenantContext, toTenantScope } from "@/lib/tenant/repository";
 import type { Session } from "@/types/auth";
+import type { TenantScope } from "@/types/tenant";
 
 function getDisplayName(user: User) {
   const metadata = user.user_metadata ?? {};
@@ -36,7 +38,25 @@ function getDealerName(user: User) {
   return "Your Dealership";
 }
 
-function mapUserToSession(user: User): Session {
+async function buildSession(user: User): Promise<Session> {
+  const fallbackDealershipName = getDealerName(user);
+
+  let tenant;
+  try {
+    tenant = await resolveTenantContext({
+      userId: user.id,
+      fallbackDealershipName,
+    });
+  } catch {
+    tenant = {
+      dealershipId: user.id,
+      dealershipName: fallbackDealershipName,
+      role: "owner" as const,
+      plan: "growth" as const,
+      subscriptionStatus: "active" as const,
+    };
+  }
+
   return {
     user: {
       id: user.id,
@@ -48,9 +68,10 @@ function mapUserToSession(user: User): Session {
           : undefined,
     },
     dealer: {
-      id: user.id,
-      name: getDealerName(user),
+      id: tenant.dealershipId,
+      name: tenant.dealershipName,
     },
+    tenant,
   };
 }
 
@@ -65,7 +86,7 @@ export async function getSession(): Promise<Session | null> {
     return null;
   }
 
-  return mapUserToSession(user);
+  return buildSession(user);
 }
 
 export async function requireSession(): Promise<Session> {
@@ -76,4 +97,16 @@ export async function requireSession(): Promise<Session> {
   }
 
   return session;
+}
+
+export async function requireTenant(): Promise<Session & { scope: TenantScope }> {
+  const session = await requireSession();
+  return {
+    ...session,
+    scope: toTenantScope(session.user.id, session.tenant),
+  };
+}
+
+export function getTenantScope(session: Session): TenantScope {
+  return toTenantScope(session.user.id, session.tenant);
 }

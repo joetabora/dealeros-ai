@@ -25,7 +25,7 @@ function revalidateCrmRoutes() {
 export async function getCrmDashboardAction() {
   try {
     const session = await requireSession();
-    const leads = await listLeads(200);
+    const leads = await listLeads(200, session.tenant.dealershipId);
     const pipeline = await listPipelineWithLeads(leads, 200);
     const summary = buildPipelineSummary(pipeline);
     const board = groupPipelineByBoardStage(pipeline);
@@ -41,7 +41,7 @@ export async function getCrmDashboardAction() {
 export async function updatePipelineStageAction(pipelineId: string, stage: CrmStage) {
   try {
     const session = await requireSession();
-    const leads = await listLeads(200);
+    const leads = await listLeads(200, session.tenant.dealershipId);
     const pipeline = await listPipelineWithLeads(leads, 200);
     const entry = pipeline.find((item) => item.id === pipelineId);
 
@@ -55,7 +55,10 @@ export async function updatePipelineStageAction(pipelineId: string, stage: CrmSt
       lead: entry.lead,
     });
 
-    const refreshed = await listPipelineWithLeads(await listLeads(200), 200);
+    const refreshed = await listPipelineWithLeads(
+      await listLeads(200, session.tenant.dealershipId),
+      200,
+    );
     await syncCrmMemory({
       userId: session.user.id,
       dealershipName: session.dealer.name,
@@ -76,7 +79,10 @@ export async function updatePipelineNotesAction(pipelineId: string, notes: strin
     const session = await requireSession();
     await updatePipelineNotes({ pipelineId, notes });
 
-    const refreshed = await listPipelineWithLeads(await listLeads(200), 200);
+    const refreshed = await listPipelineWithLeads(
+      await listLeads(200, session.tenant.dealershipId),
+      200,
+    );
     await syncCrmMemory({
       userId: session.user.id,
       dealershipName: session.dealer.name,
@@ -105,7 +111,10 @@ export async function scheduleFollowUpAction({
     const session = await requireSession();
     await schedulePipelineFollowUp({ pipelineId, nextAction, nextActionDate });
 
-    const refreshed = await listPipelineWithLeads(await listLeads(200), 200);
+    const refreshed = await listPipelineWithLeads(
+      await listLeads(200, session.tenant.dealershipId),
+      200,
+    );
     await syncCrmMemory({
       userId: session.user.id,
       dealershipName: session.dealer.name,

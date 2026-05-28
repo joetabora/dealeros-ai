@@ -48,12 +48,14 @@ function revalidateCalendarRoutes() {
 
 async function finalizeScheduledBatch({
   userId,
+  dealershipId,
   dealershipName,
   resolved,
   controlMode,
   context,
 }: {
   userId: string;
+  dealershipId?: string;
   dealershipName: string;
   resolved: Array<{
     dealershipName: string;
@@ -87,7 +89,7 @@ async function finalizeScheduledBatch({
     return [];
   }
 
-  const saved = await insertScheduledActions({ userId, actions: resolved });
+  const saved = await insertScheduledActions({ userId, dealershipId, actions: resolved });
   await processScheduledActionsWithApproval({
     userId,
     savedActions: saved,
@@ -100,11 +102,13 @@ async function finalizeScheduledBatch({
 
 export async function scheduleFromMarketingCampaign({
   userId,
+  dealershipId,
   input,
   outputs,
   campaignId,
 }: {
   userId: string;
+  dealershipId?: string;
   input: MarketingCampaignInput;
   outputs: FullMarketingCampaignOutput;
   campaignId: string;
@@ -119,6 +123,7 @@ export async function scheduleFromMarketingCampaign({
 
   const saved = await finalizeScheduledBatch({
     userId,
+    dealershipId,
     dealershipName: input.dealershipName,
     resolved,
     controlMode,
@@ -128,6 +133,7 @@ export async function scheduleFromMarketingCampaign({
   if (saved.length > 0) {
     await recordMarketingCampaignAnalytics({
       userId,
+      dealershipId,
       input,
       output: outputs,
       campaignId,
@@ -140,10 +146,12 @@ export async function scheduleFromMarketingCampaign({
 
 export async function scheduleFromEvent({
   userId,
+  dealershipId,
   event,
   campaignId,
 }: {
   userId: string;
+  dealershipId?: string;
   event: DealershipEvent;
   campaignId?: string | null;
 }): Promise<ScheduledMarketingAction[]> {
@@ -160,6 +168,7 @@ export async function scheduleFromEvent({
 
   const saved = await finalizeScheduledBatch({
     userId,
+    dealershipId,
     dealershipName: event.dealershipName,
     resolved,
     controlMode,
@@ -169,6 +178,7 @@ export async function scheduleFromEvent({
   if (saved.length > 0) {
     await recordEventCampaignAnalytics({
       userId,
+      dealershipId,
       event,
       scheduledActions: saved,
     });
@@ -179,12 +189,14 @@ export async function scheduleFromEvent({
 
 export async function scheduleFromCampaignGenerator({
   userId,
+  dealershipId,
   dealershipName,
   campaignId,
   outputs,
   input,
 }: {
   userId: string;
+  dealershipId?: string;
   dealershipName: string;
   campaignId: string;
   outputs: CampaignGeneratorOutputs;
@@ -200,6 +212,7 @@ export async function scheduleFromCampaignGenerator({
 
   const saved = await finalizeScheduledBatch({
     userId,
+    dealershipId,
     dealershipName,
     resolved,
     controlMode,
@@ -209,6 +222,7 @@ export async function scheduleFromCampaignGenerator({
   if (saved.length > 0) {
     await recordLegacyCampaignAnalytics({
       userId,
+      dealershipId,
       input,
       campaignId,
       scheduledActions: saved,

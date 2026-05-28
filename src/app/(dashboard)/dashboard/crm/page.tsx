@@ -1,8 +1,11 @@
 import { CrmWorkspace } from "@/components/crm/crm-workspace";
+import { FeatureGate } from "@/components/billing/feature-gate";
 import { PageContainer, PageHeader } from "@/components/layout/page-shell";
 import { getCrmDashboardAction } from "@/lib/crm/actions";
+import { requireSession } from "@/lib/auth/session";
 
 export default async function CrmPage() {
+  const session = await requireSession();
   const result = await getCrmDashboardAction();
 
   if (result.error || !result.pipeline || !result.summary || !result.board) {
@@ -14,7 +17,7 @@ export default async function CrmPage() {
         />
         <p className="text-sm text-muted-foreground">
           {result.error ??
-            "Unable to load CRM pipeline. Confirm Supabase migration 20260527220000_crm_pipeline.sql is applied."}
+            "Unable to load CRM pipeline. Confirm Supabase migrations are applied."}
         </p>
       </PageContainer>
     );
@@ -26,11 +29,13 @@ export default async function CrmPage() {
         title="CRM Lite"
         description="Action-driven closing system — track follow-ups, prioritize high-intent leads, and convert marketing into sales."
       />
-      <CrmWorkspace
-        pipeline={result.pipeline}
-        summary={result.summary}
-        board={result.board}
-      />
+      <FeatureGate tenant={session.tenant} feature="crm_lite">
+        <CrmWorkspace
+          pipeline={result.pipeline}
+          summary={result.summary}
+          board={result.board}
+        />
+      </FeatureGate>
     </PageContainer>
   );
 }

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { clampPageSize } from "@/lib/tenant/scoped-query";
 import type {
   DealershipLead,
   LeadCaptureInput,
@@ -49,6 +50,7 @@ export async function insertLead(input: LeadCaptureInput): Promise<DealershipLea
     .from("leads")
     .insert({
       user_id: input.userId,
+      dealership_id: input.dealershipId ?? null,
       dealership_name: input.dealershipName,
       campaign_id: input.campaignId ?? null,
       event_id: input.eventId ?? null,
@@ -69,14 +71,21 @@ export async function insertLead(input: LeadCaptureInput): Promise<DealershipLea
   return mapRow(data as LeadRow);
 }
 
-export async function listLeads(limit = 100): Promise<DealershipLead[]> {
+export async function listLeads(limit = 100, dealershipId?: string): Promise<DealershipLead[]> {
   const supabase = await createClient();
+  const pageSize = clampPageSize(limit);
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("leads")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(pageSize);
+
+  if (dealershipId) {
+    query = query.eq("dealership_id", dealershipId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);

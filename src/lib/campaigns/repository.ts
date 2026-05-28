@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { clampPageSize } from "@/lib/tenant/scoped-query";
 import type {
   Campaign,
   CampaignGeneratorInput,
@@ -8,6 +9,7 @@ import type {
 type CampaignRow = {
   id: string;
   user_id: string;
+  dealership_id: string | null;
   dealership_name: string;
   campaign_type: string;
   inputs_json: CampaignGeneratorInput;
@@ -27,14 +29,24 @@ function mapRow(row: CampaignRow): Campaign {
   };
 }
 
-export async function listCampaigns(limit = 50): Promise<Campaign[]> {
+export async function listCampaigns(
+  limit = 50,
+  dealershipId?: string,
+): Promise<Campaign[]> {
   const supabase = await createClient();
+  const pageSize = clampPageSize(limit);
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("campaigns")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(pageSize);
+
+  if (dealershipId) {
+    query = query.eq("dealership_id", dealershipId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -61,10 +73,12 @@ export async function getCampaign(id: string): Promise<Campaign | null> {
 
 export async function createCampaign({
   userId,
+  dealershipId,
   input,
   outputs,
 }: {
   userId: string;
+  dealershipId?: string;
   input: CampaignGeneratorInput;
   outputs: CampaignGeneratorOutputs;
 }): Promise<Campaign> {
@@ -74,6 +88,7 @@ export async function createCampaign({
     .from("campaigns")
     .insert({
       user_id: userId,
+      dealership_id: dealershipId ?? null,
       dealership_name: input.dealershipName,
       campaign_type: input.campaignType,
       inputs_json: input,

@@ -17,8 +17,8 @@ export default async function AnalyticsPage() {
 
   try {
     const [analyticsRecords, leads] = await Promise.all([
-      listCampaignAnalytics(50),
-      listLeads(200),
+      listCampaignAnalytics(50, session.tenant.dealershipId),
+      listLeads(200, session.tenant.dealershipId),
     ]);
     records = analyticsRecords;
     capturedLeadTotal = leads.length;

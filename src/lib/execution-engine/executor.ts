@@ -2,6 +2,7 @@ import { canExecuteScheduledAction } from "@/lib/approval-system/gates";
 import { getControlMode } from "@/lib/approval-system/repository";
 import { runAutopilotForExecutedDealerships } from "@/lib/autopilot/service";
 import { getProviderForPlatform } from "@/lib/execution-engine/providers";
+import { logger } from "@/lib/logging/logger";
 import type {
   ExecutionMetadata,
   ExecutionRunSummary,
@@ -63,6 +64,11 @@ export async function executeDueActions(
   const controlModeCache = new Map<string, Awaited<ReturnType<typeof getControlMode>>>();
 
   for (const action of actions) {
+    if (!action.dealershipName) {
+      logger.warn("execution.skipped_missing_dealership", { actionId: action.id });
+      continue;
+    }
+
     summary.processed += 1;
     affectedDealerships.add(action.dealershipName);
 
@@ -158,8 +164,22 @@ export async function executeDueActions(
         success: false,
         error: message,
       });
+
+      logger.executionFailed({
+        actionId: action.id,
+        dealershipName: action.dealershipName,
+        platform: action.platform,
+        error: message,
+      });
     }
   }
+
+  logger.executionRun({
+    processed: summary.processed,
+    sent: summary.sent,
+    failed: summary.failed,
+    useAdmin,
+  });
 
   if (userId && summary.processed > 0) {
     await runAutopilotForExecutedDealerships({

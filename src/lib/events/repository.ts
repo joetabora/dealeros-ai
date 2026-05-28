@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { clampPageSize } from "@/lib/tenant/scoped-query";
 import type {
   DealershipEvent,
   EventInput,
@@ -32,15 +33,22 @@ function mapRow(row: EventRow): DealershipEvent {
   };
 }
 
-export async function listEvents(limit = 50): Promise<DealershipEvent[]> {
+export async function listEvents(limit = 50, dealershipId?: string): Promise<DealershipEvent[]> {
   const supabase = await createClient();
+  const pageSize = clampPageSize(limit);
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("events")
     .select("*")
     .order("event_date", { ascending: false })
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(pageSize);
+
+  if (dealershipId) {
+    query = query.eq("dealership_id", dealershipId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);
@@ -67,11 +75,13 @@ export async function getEvent(id: string): Promise<DealershipEvent | null> {
 
 export async function createEvent({
   userId,
+  dealershipId,
   dealershipName,
   input,
   promotionPack,
 }: {
   userId: string;
+  dealershipId?: string;
   dealershipName: string;
   input: EventInput;
   promotionPack?: EventPromotionPack;
@@ -82,6 +92,7 @@ export async function createEvent({
     .from("events")
     .insert({
       user_id: userId,
+      dealership_id: dealershipId ?? null,
       dealership_name: dealershipName,
       event_name: input.eventName,
       event_type: input.eventType,

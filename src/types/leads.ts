@@ -43,6 +43,7 @@ export type DealershipLead = {
 export type LeadCaptureInput = {
   userId: string;
   dealershipName: string;
+  dealershipId?: string;
   campaignId?: string | null;
   eventId?: string | null;
   source: LeadSource;

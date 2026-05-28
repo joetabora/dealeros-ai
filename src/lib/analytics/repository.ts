@@ -43,6 +43,7 @@ function mapRow(row: AnalyticsRow): CampaignAnalyticsRecord {
 
 export async function insertCampaignAnalytics({
   userId,
+  dealershipId,
   campaignId,
   eventId,
   dealershipName,
@@ -56,6 +57,7 @@ export async function insertCampaignAnalytics({
   performanceScore,
 }: {
   userId: string;
+  dealershipId?: string;
   campaignId?: string | null;
   eventId?: string | null;
   dealershipName: string;
@@ -74,6 +76,7 @@ export async function insertCampaignAnalytics({
     .from("campaign_analytics")
     .insert({
       user_id: userId,
+      dealership_id: dealershipId ?? null,
       campaign_id: campaignId ?? null,
       event_id: eventId ?? null,
       dealership_name: dealershipName,
@@ -98,14 +101,21 @@ export async function insertCampaignAnalytics({
 
 export async function listCampaignAnalytics(
   limit = 50,
+  dealershipId?: string,
 ): Promise<CampaignAnalyticsRecord[]> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("campaign_analytics")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(limit);
+
+  if (dealershipId) {
+    query = query.eq("dealership_id", dealershipId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     throw new Error(error.message);

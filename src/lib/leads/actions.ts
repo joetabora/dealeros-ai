@@ -26,8 +26,8 @@ function revalidateLeadRoutes() {
 
 export async function getLeadsDashboardAction() {
   try {
-    await requireSession();
-    const leads = await listLeads(100);
+    const session = await requireSession();
+    const leads = await listLeads(100, session.tenant.dealershipId);
     return { leads, summary: buildLeadSummary(leads) };
   } catch (error) {
     return {
@@ -55,6 +55,7 @@ export async function simulateSmsLeadAction(keyword: string, campaignId?: string
     const lead = await simulateSmsResponseLead({
       userId: session.user.id,
       dealershipName: session.dealer.name,
+      dealershipId: session.tenant.dealershipId,
       keyword,
       campaignId,
     });
@@ -73,6 +74,7 @@ export async function simulateEventLeadAction(eventId: string, campaignId?: stri
     const lead = await simulateEventRsvpLead({
       userId: session.user.id,
       dealershipName: session.dealer.name,
+      dealershipId: session.tenant.dealershipId,
       eventId,
       campaignId,
     });
@@ -91,6 +93,7 @@ export async function simulateEmailLeadAction(campaignId?: string) {
     const lead = await simulateEmailEngagementLead({
       userId: session.user.id,
       dealershipName: session.dealer.name,
+      dealershipId: session.tenant.dealershipId,
       campaignId,
     });
     revalidateLeadRoutes();

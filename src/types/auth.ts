@@ -13,4 +13,5 @@ export type SessionDealer = {
 export type Session = {
   user: SessionUser;
   dealer: SessionDealer;
+  tenant: import("@/types/tenant").TenantContext;
 };

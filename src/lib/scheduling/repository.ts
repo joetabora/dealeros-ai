@@ -165,9 +165,11 @@ export async function listDuePendingActions({
 
 export async function insertScheduledActions({
   userId,
+  dealershipId,
   actions,
 }: {
   userId: string;
+  dealershipId?: string;
   actions: InsertAction[];
 }): Promise<ScheduledMarketingAction[]> {
   if (actions.length === 0) return [];
@@ -176,6 +178,7 @@ export async function insertScheduledActions({
 
   const rows = actions.map((action) => ({
     user_id: userId,
+    dealership_id: dealershipId ?? null,
     dealership_name: action.dealershipName,
     campaign_id: action.campaignId ?? null,
     event_id: action.eventId ?? null,

@@ -54,6 +54,7 @@ export async function getAutopilotDashboardAction(): Promise<{
     const session = await requireSession();
     const dashboard = await buildAutopilotDashboard({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       dealershipName: session.dealer.name,
       softUpdate: true,
     });
@@ -102,6 +103,7 @@ export async function updateWeeklyPlanDayAction(
     const session = await requireSession();
     const dashboard = await saveWeeklyPlanUpdate({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       dealershipName: session.dealer.name,
       dayId,
       updates,
@@ -125,6 +127,7 @@ export async function generateRecommendedCampaignAction(): Promise<{
     const session = await requireSession();
     const dashboard = await buildAutopilotDashboard({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       dealershipName: session.dealer.name,
       softUpdate: true,
     });

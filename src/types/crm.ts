@@ -98,6 +98,7 @@ export const CRM_NEXT_ACTION_LABELS: Record<CrmNextAction, string> = {
 
 export type CreatePipelineInput = {
   userId: string;
+  dealershipId?: string;
   lead: DealershipLead;
   intentLevel?: IntentLevel;
   engagementType?: string;

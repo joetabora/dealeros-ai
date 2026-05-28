@@ -53,12 +53,14 @@ export async function generateCampaignAction(
     const outputs = await generateCampaignContent(input, session.user.id);
     const generation = await createCampaign({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       input,
       outputs,
     });
 
     await syncDealershipMemory({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       dealershipName: input.dealershipName,
       input,
       outputs,
@@ -66,6 +68,7 @@ export async function generateCampaignAction(
 
     await scheduleFromCampaignGenerator({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       dealershipName: input.dealershipName,
       campaignId: generation.id,
       outputs,

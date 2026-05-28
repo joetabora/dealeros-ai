@@ -1,4 +1,5 @@
 import { AutopilotWorkspace } from "@/components/autopilot/autopilot-workspace";
+import { FeatureGate } from "@/components/billing/feature-gate";
 import { PageContainer, PageHeader } from "@/components/layout/page-shell";
 import { buildAutopilotDashboard } from "@/lib/autopilot/service";
 import { requireSession } from "@/lib/auth/session";
@@ -12,6 +13,7 @@ export default async function AutopilotPage() {
   try {
     dashboard = await buildAutopilotDashboard({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       dealershipName: session.dealer.name,
       softUpdate: true,
     });
@@ -40,7 +42,9 @@ export default async function AutopilotPage() {
         title="Marketing Autopilot"
         description="It tells you exactly what to do next — analyze performance, recommend campaigns, and plan your week automatically."
       />
-      <AutopilotWorkspace initialDashboard={dashboard} />
+      <FeatureGate tenant={session.tenant} feature="autopilot">
+        <AutopilotWorkspace initialDashboard={dashboard} />
+      </FeatureGate>
     </PageContainer>
   );
 }

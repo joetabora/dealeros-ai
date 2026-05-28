@@ -62,10 +62,12 @@ function revalidateMarketingRoutes(campaignId?: string) {
 
 async function saveToCampaignHistory({
   userId,
+  dealershipId,
   input,
   outputs,
 }: {
   userId: string;
+  dealershipId: string;
   input: MarketingCampaignInput;
   outputs: FullMarketingCampaignOutput;
 }) {
@@ -74,12 +76,14 @@ async function saveToCampaignHistory({
 
   const savedCampaign = await createCampaign({
     userId,
+    dealershipId,
     input: campaignInput,
     outputs: campaignOutputs,
   });
 
   await syncDealershipMemory({
     userId,
+    dealershipId,
     dealershipName: input.dealershipName,
     input: campaignInput,
     outputs: campaignOutputs,
@@ -106,6 +110,7 @@ export async function generateFullCampaignAction(
 
     const campaign = await createMarketingCampaign({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       input,
       outputs,
     });
@@ -119,12 +124,14 @@ export async function generateFullCampaignAction(
 
     const savedCampaign = await saveToCampaignHistory({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       input,
       outputs,
     });
 
     await scheduleFromMarketingCampaign({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       input,
       outputs,
       campaignId: savedCampaign.id,

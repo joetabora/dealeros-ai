@@ -109,16 +109,18 @@ function deriveGenerationWeights(
 
 export async function syncDealershipMemory({
   userId,
+  dealershipId,
   dealershipName,
   input,
 }: {
   userId: string;
+  dealershipId?: string;
   dealershipName: string;
   input: CampaignGeneratorInput;
   outputs: CampaignGeneratorOutputs;
 }): Promise<void> {
 
-  const campaigns = (await listCampaigns(100)).filter(
+  const campaigns = (await listCampaigns(100, dealershipId)).filter(
     (campaign) =>
       campaign.userId === userId &&
       campaign.dealershipName.toLowerCase() === dealershipName.toLowerCase(),
@@ -156,6 +158,7 @@ export async function syncDealershipMemory({
     preferredTone
       ? upsertDealershipMemory({
           userId,
+          dealershipId,
           dealershipName,
           memoryType: "preferred_tone",
           memoryValue: {
@@ -172,6 +175,7 @@ export async function syncDealershipMemory({
     preferredCampaignType
       ? upsertDealershipMemory({
           userId,
+          dealershipId,
           dealershipName,
           memoryType: "successful_campaign_style",
           memoryValue: {
@@ -191,6 +195,7 @@ export async function syncDealershipMemory({
       : Promise.resolve(),
     upsertDealershipMemory({
       userId,
+      dealershipId,
       dealershipName,
       memoryType: "audience_insight",
       memoryValue: {
@@ -200,6 +205,7 @@ export async function syncDealershipMemory({
     }),
     upsertDealershipMemory({
       userId,
+      dealershipId,
       dealershipName,
       memoryType: "event_patterns",
       memoryValue: {
@@ -210,6 +216,7 @@ export async function syncDealershipMemory({
     }),
     upsertDealershipMemory({
       userId,
+      dealershipId,
       dealershipName,
       memoryType: "generation_weights",
       memoryValue: {

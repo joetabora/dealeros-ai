@@ -62,6 +62,7 @@ export async function insertPipelineFromLead(input: CreatePipelineInput): Promis
     .insert({
       user_id: input.userId,
       lead_id: input.lead.id,
+      dealership_id: input.dealershipId ?? null,
       dealership_name: input.lead.dealershipName,
       stage: "new",
       priority,

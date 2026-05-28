@@ -46,10 +46,12 @@ function revalidateEventRoutes(eventId?: string) {
 
 async function createEventWithPromotion({
   userId,
+  dealershipId,
   dealershipName,
   input,
 }: {
   userId: string;
+  dealershipId: string;
   dealershipName: string;
   input: EventInput;
 }) {
@@ -57,6 +59,7 @@ async function createEventWithPromotion({
 
   const draftEvent = await createEvent({
     userId,
+    dealershipId,
     dealershipName,
     input,
   });
@@ -72,6 +75,7 @@ async function createEventWithPromotion({
 
   await scheduleFromEvent({
     userId,
+    dealershipId,
     event,
   });
 
@@ -87,6 +91,7 @@ export async function createEventAction(
     const input = parseEventInput(formData);
     const event = await createEventWithPromotion({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       dealershipName: session.dealer.name,
       input,
     });
@@ -105,6 +110,7 @@ export async function createEventFromInputs(
     const session = await requireSession();
     const event = await createEventWithPromotion({
       userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
       dealershipName: session.dealer.name,
       input: inputs,
     });

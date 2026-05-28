@@ -106,11 +106,13 @@ export async function listDealershipMemory(
 
 export async function upsertDealershipMemory({
   userId,
+  dealershipId,
   dealershipName,
   memoryType,
   memoryValue,
 }: {
   userId: string;
+  dealershipId?: string;
   dealershipName: string;
   memoryType: DealershipMemoryType;
   memoryValue: Record<string, unknown>;
@@ -120,6 +122,7 @@ export async function upsertDealershipMemory({
   const { error } = await supabase.from("dealership_memory").upsert(
     {
       user_id: userId,
+      dealership_id: dealershipId ?? null,
       dealership_name: dealershipName,
       memory_type: memoryType,
       memory_value: memoryValue,

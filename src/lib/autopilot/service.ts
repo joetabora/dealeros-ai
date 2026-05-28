@@ -29,19 +29,21 @@ function loadStoredWeeklyPlan(
 
 export async function buildAutopilotDashboard({
   userId,
+  dealershipId,
   dealershipName,
   softUpdate = false,
 }: {
   userId: string;
+  dealershipId?: string;
   dealershipName: string;
   softUpdate?: boolean;
 }): Promise<AutopilotDashboard> {
   const [analytics, scheduledActions, memory, memoryRecords, leads] = await Promise.all([
-    listCampaignAnalytics(100),
+    listCampaignAnalytics(100, dealershipId),
     listScheduledActions(200),
     getDealershipMemoryProfile(userId, dealershipName),
     listDealershipMemory(userId, dealershipName),
-    listLeads(200),
+    listLeads(200, dealershipId),
   ]);
 
   const pipeline = await listPipelineWithLeads(leads, 200);
@@ -78,16 +80,19 @@ export async function buildAutopilotDashboard({
 
 export async function runAutopilotCycle({
   userId,
+  dealershipId,
   dealershipName,
   softUpdate = true,
 }: {
   userId: string;
+  dealershipId?: string;
   dealershipName: string;
   softUpdate?: boolean;
 }) {
   try {
     const dashboard = await buildAutopilotDashboard({
       userId,
+      dealershipId,
       dealershipName,
       softUpdate,
     });
@@ -129,17 +134,20 @@ export async function refreshAutopilotPlan({
 
 export async function saveWeeklyPlanUpdate({
   userId,
+  dealershipId,
   dealershipName,
   dayId,
   updates,
 }: {
   userId: string;
+  dealershipId?: string;
   dealershipName: string;
   dayId: string;
   updates: Parameters<typeof updateWeeklyPlanDay>[2];
 }) {
   const dashboard = await buildAutopilotDashboard({
     userId,
+    dealershipId,
     dealershipName,
     softUpdate: true,
   });

@@ -26,12 +26,14 @@ type ScheduledActionSnapshot = Pick<
 
 async function persistAnalysis({
   userId,
+  dealershipId,
   campaignId,
   eventId,
   context,
   memory,
 }: {
   userId: string;
+  dealershipId?: string;
   campaignId?: string | null;
   eventId?: string | null;
   context: AnalyticsContext;
@@ -42,6 +44,7 @@ async function persistAnalysis({
 
     const record = await insertCampaignAnalytics({
       userId,
+      dealershipId,
       campaignId,
       eventId,
       dealershipName: context.dealershipName,
@@ -76,6 +79,7 @@ async function persistAnalysis({
 
 export async function recordMarketingCampaignAnalytics({
   userId,
+  dealershipId,
   input,
   output,
   campaignId,
@@ -83,6 +87,7 @@ export async function recordMarketingCampaignAnalytics({
   memory,
 }: {
   userId: string;
+  dealershipId?: string;
   input: MarketingCampaignInput;
   output: FullMarketingCampaignOutput;
   campaignId: string;
@@ -102,6 +107,7 @@ export async function recordMarketingCampaignAnalytics({
 
   return persistAnalysis({
     userId,
+    dealershipId,
     campaignId,
     context,
     memory: resolvedMemory,
@@ -110,11 +116,13 @@ export async function recordMarketingCampaignAnalytics({
 
 export async function recordEventCampaignAnalytics({
   userId,
+  dealershipId,
   event,
   scheduledActions,
   memory,
 }: {
   userId: string;
+  dealershipId?: string;
   event: DealershipEvent;
   scheduledActions: ScheduledActionSnapshot[];
   memory?: DealershipMemoryProfile;
@@ -131,6 +139,7 @@ export async function recordEventCampaignAnalytics({
 
   return persistAnalysis({
     userId,
+    dealershipId,
     eventId: event.id,
     context,
     memory: resolvedMemory,
@@ -139,12 +148,14 @@ export async function recordEventCampaignAnalytics({
 
 export async function recordLegacyCampaignAnalytics({
   userId,
+  dealershipId,
   input,
   campaignId,
   scheduledActions,
   memory,
 }: {
   userId: string;
+  dealershipId?: string;
   input: CampaignGeneratorInput;
   campaignId: string;
   scheduledActions: ScheduledActionSnapshot[];
@@ -162,6 +173,7 @@ export async function recordLegacyCampaignAnalytics({
 
   return persistAnalysis({
     userId,
+    dealershipId,
     campaignId,
     context,
     memory: resolvedMemory,
