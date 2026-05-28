@@ -4,6 +4,7 @@ import {
   Megaphone,
   RefreshCw,
   Settings,
+  Sparkles,
 } from "lucide-react";
 
 import type { NavSection } from "@/types/navigation";
@@ -17,6 +18,13 @@ export const dashboardNavigation: NavSection[] = [
         href: "/dashboard",
         icon: LayoutDashboard,
         description: "Pipeline health and daily performance",
+      },
+      {
+        title: "Live Demo",
+        href: "/dashboard/demo",
+        icon: Sparkles,
+        description: "Instant sales demo — no setup required",
+        badge: "Demo",
       },
       {
         title: "Campaigns",

@@ -5,6 +5,13 @@ import { getSupabaseEnv } from "@/lib/supabase/env";
 
 const PROTECTED_PREFIX = "/dashboard";
 const AUTH_ROUTES = ["/login"];
+const PUBLIC_DASHBOARD_ROUTES = ["/dashboard/demo"];
+
+function isPublicDashboardRoute(pathname: string) {
+  return PUBLIC_DASHBOARD_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+}
 
 function isProtectedRoute(pathname: string) {
   return (
@@ -52,7 +59,7 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (!user && isProtectedRoute(pathname)) {
+  if (!user && isProtectedRoute(pathname) && !isPublicDashboardRoute(pathname)) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("redirect", pathname);
