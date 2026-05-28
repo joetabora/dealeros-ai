@@ -45,6 +45,14 @@ export function AutopilotWorkspace({ initialDashboard }: AutopilotWorkspaceProps
               <Badge variant="secondary">
                 Avg score {dashboard.analysis.averageScore}
               </Badge>
+              <Badge variant="secondary">
+                {dashboard.analysis.totalCapturedLeads} leads captured
+              </Badge>
+              {dashboard.analysis.leadConversionRate > 0 ? (
+                <Badge className="bg-emerald-500/15 text-emerald-400">
+                  {dashboard.analysis.leadConversionRate}% lead conversion
+                </Badge>
+              ) : null}
             </div>
             <p className="text-sm text-muted-foreground">
               {dashboard.analysis.engagementTrendDetail}

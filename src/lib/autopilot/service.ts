@@ -10,6 +10,7 @@ import {
   getDealershipMemoryProfile,
   listDealershipMemory,
 } from "@/lib/campaigns/memory/repository";
+import { listLeads } from "@/lib/leads/repository";
 import { listScheduledActions } from "@/lib/scheduling/repository";
 import type { AutopilotDashboard, WeeklyMarketingPlan } from "@/types/autopilot";
 
@@ -34,11 +35,12 @@ export async function buildAutopilotDashboard({
   dealershipName: string;
   softUpdate?: boolean;
 }): Promise<AutopilotDashboard> {
-  const [analytics, scheduledActions, memory, memoryRecords] = await Promise.all([
+  const [analytics, scheduledActions, memory, memoryRecords, leads] = await Promise.all([
     listCampaignAnalytics(100),
     listScheduledActions(200),
     getDealershipMemoryProfile(userId, dealershipName),
     listDealershipMemory(userId, dealershipName),
+    listLeads(200),
   ]);
 
   const analysis = analyzePerformanceHistory({
@@ -46,6 +48,7 @@ export async function buildAutopilotDashboard({
     analytics,
     memory,
     scheduledActions,
+    leads,
   });
 
   const recommendation = recommendNextCampaign({ analysis, memory });

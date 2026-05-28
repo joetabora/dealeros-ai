@@ -5,7 +5,8 @@ export type DealershipMemoryType =
   | "event_patterns"
   | "generation_weights"
   | "performance_insights"
-  | "autopilot_state";
+  | "autopilot_state"
+  | "lead_insights";
 
 export type PreferredToneMemory = {
   tone: string;

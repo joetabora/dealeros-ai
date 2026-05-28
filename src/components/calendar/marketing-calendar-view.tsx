@@ -7,12 +7,14 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import type { ScheduledMarketingAction } from "@/types/scheduling";
+import type { ApprovalStatus } from "@/types/approval";
 
 type MarketingCalendarViewProps = {
   actions: ScheduledMarketingAction[];
   demoMode?: boolean;
   emptyMessage?: string;
   simulatedIds?: Set<string>;
+  approvalStatusByActionId?: Record<string, ApprovalStatus>;
 };
 
 export function MarketingCalendarView({
@@ -20,6 +22,7 @@ export function MarketingCalendarView({
   demoMode = false,
   emptyMessage = "Scheduled marketing actions will appear here after you generate a campaign, schedule an event, or run the one-click marketing engine.",
   simulatedIds,
+  approvalStatusByActionId,
 }: MarketingCalendarViewProps) {
   const groups = groupActionsByDate(actions);
 
@@ -55,6 +58,7 @@ export function MarketingCalendarView({
                 action={action}
                 demoMode={demoMode}
                 simulated={simulatedIds?.has(action.id)}
+                approvalStatus={approvalStatusByActionId?.[action.id]}
               />
             ))}
           </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Megaphone } from "lucide-react";
 
 import { PromotionPackView } from "@/components/events/promotion-pack-view";
+import { EventLeadSimulator } from "@/components/events/event-lead-simulator";
 import { PageHeader } from "@/components/layout/page-shell";
 import {
   formatEventDate,
@@ -77,6 +78,7 @@ export function EventDetailView({ event }: EventDetailViewProps) {
                 {promotionCount} promotion assets ready
               </Badge>
             ) : null}
+            <EventLeadSimulator eventId={event.id} />
           </div>
         </CardContent>
       </Card>

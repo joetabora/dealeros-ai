@@ -9,7 +9,9 @@ import {
   RefreshCw,
   Rocket,
   Settings,
+  ShieldCheck,
   Sparkles,
+  Users,
 } from "lucide-react";
 
 import type { NavSection } from "@/types/navigation";
@@ -45,11 +47,25 @@ export const dashboardNavigation: NavSection[] = [
         badge: "Intel",
       },
       {
+        title: "Leads",
+        href: "/dashboard/leads",
+        icon: Users,
+        description: "Captured contacts from campaigns, SMS, email, and events",
+        badge: "Revenue",
+      },
+      {
         title: "Autopilot",
         href: "/dashboard/autopilot",
         icon: Bot,
         description: "Self-improving recommendations and automatic weekly marketing plans",
         badge: "AI",
+      },
+      {
+        title: "Approvals",
+        href: "/dashboard/approvals",
+        icon: ShieldCheck,
+        description: "Review, edit, and approve AI marketing before it goes live",
+        badge: "Control",
       },
       {
         title: "Live Demo",

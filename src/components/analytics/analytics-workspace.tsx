@@ -15,16 +15,20 @@ type AnalyticsWorkspaceProps = {
   records: CampaignAnalyticsRecord[];
   summary: AnalyticsSummary;
   dealershipName: string;
+  capturedLeadTotal?: number;
+  leadCountsByCampaign?: Record<string, number>;
 };
 
 export function AnalyticsWorkspace({
   records,
   summary,
   dealershipName,
+  capturedLeadTotal = 0,
+  leadCountsByCampaign = {},
 }: AnalyticsWorkspaceProps) {
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <SummaryStat label="Campaigns analyzed" value={String(summary.totalCampaigns)} />
         <SummaryStat label="Avg. performance score" value={String(summary.averageScore)} />
         <SummaryStat
@@ -35,6 +39,7 @@ export function AnalyticsWorkspace({
           label="Avg. traffic lift"
           value={`+${summary.averageTrafficLift}%`}
         />
+        <SummaryStat label="Captured leads" value={String(capturedLeadTotal)} />
       </div>
 
       <InsightsSummaryPanel insights={summary.insights} dealershipName={dealershipName} />
@@ -75,6 +80,9 @@ export function AnalyticsWorkspace({
                     <p className="font-medium">{record.campaignLabel}</p>
                     <p className="text-xs text-muted-foreground">
                       Score {record.performanceScore} · {record.estimatedLeads} est. leads
+                      {record.campaignId && leadCountsByCampaign[record.campaignId]
+                        ? ` · ${leadCountsByCampaign[record.campaignId]} captured`
+                        : ""}
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-emerald-400">
@@ -108,6 +116,11 @@ export function AnalyticsWorkspace({
                 key={record.id}
                 record={record}
                 rank={index + 1}
+                capturedLeads={
+                  record.campaignId
+                    ? leadCountsByCampaign[record.campaignId] ?? 0
+                    : 0
+                }
               />
             ))}
           </div>

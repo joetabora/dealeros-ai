@@ -82,6 +82,48 @@ export async function listScheduledActions(
   return (data as ScheduledActionRow[]).map(mapRow);
 }
 
+export async function updateScheduledActionContent({
+  actionId,
+  content,
+  scheduledFor,
+}: {
+  actionId: string;
+  content: string;
+  scheduledFor?: string;
+}) {
+  const supabase = await createClient();
+
+  const payload: Record<string, string> = { content };
+  if (scheduledFor) payload.scheduled_for = scheduledFor;
+
+  const { error } = await supabase
+    .from("scheduled_marketing_actions")
+    .update(payload)
+    .eq("id", actionId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function markScheduledActionSkipped(actionId: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("scheduled_marketing_actions")
+    .update({
+      status: "skipped",
+      execution_status: "failed",
+      executed_at: new Date().toISOString(),
+      provider_response: { reason: "cancelled_by_user" },
+    })
+    .eq("id", actionId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export async function listDuePendingActions({
   userId,
   limit = 50,

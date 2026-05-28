@@ -17,15 +17,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { ApprovalStatus } from "@/types/approval";
 import type { ScheduledMarketingAction, ScheduledStatus } from "@/types/scheduling";
 
 type CalendarWorkspaceProps = {
   initialActions: ScheduledMarketingAction[];
+  approvalStatusByActionId?: Record<string, ApprovalStatus>;
+  pendingApprovalCount?: number;
 };
 
 type FilterStatus = "all" | ScheduledStatus;
 
-export function CalendarWorkspace({ initialActions }: CalendarWorkspaceProps) {
+export function CalendarWorkspace({
+  initialActions,
+  approvalStatusByActionId = {},
+  pendingApprovalCount = 0,
+}: CalendarWorkspaceProps) {
   const [actions, setActions] = useState(initialActions);
   const [filter, setFilter] = useState<FilterStatus>("all");
   const [message, setMessage] = useState<string | null>(null);
@@ -141,7 +148,20 @@ export function CalendarWorkspace({ initialActions }: CalendarWorkspaceProps) {
         </TabsList>
       </Tabs>
 
-      <MarketingCalendarView actions={filteredActions} />
+      {pendingApprovalCount > 0 ? (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-400">
+          {pendingApprovalCount} item{pendingApprovalCount === 1 ? "" : "s"} waiting for
+          approval before execution.{" "}
+          <a href="/dashboard/approvals" className="underline underline-offset-2">
+            Review now
+          </a>
+        </div>
+      ) : null}
+
+      <MarketingCalendarView
+        actions={filteredActions}
+        approvalStatusByActionId={approvalStatusByActionId}
+      />
     </div>
   );
 }

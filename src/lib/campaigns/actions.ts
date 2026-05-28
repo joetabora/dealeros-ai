@@ -38,6 +38,8 @@ function revalidateCampaignRoutes() {
   revalidatePath("/dashboard/calendar");
   revalidatePath("/dashboard/analytics");
   revalidatePath("/dashboard/autopilot");
+  revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard/approvals");
 }
 
 export async function generateCampaignAction(

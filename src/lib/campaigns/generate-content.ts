@@ -1,5 +1,9 @@
 import { getDealershipMemoryProfile } from "@/lib/campaigns/memory/repository";
 import { generateCampaign } from "@/lib/demo-ai";
+import {
+  buildLeadCaptureLayer,
+  enrichContentWithLeadTracking,
+} from "@/lib/leads/cta-tracking";
 import type {
   CampaignGeneratorInput,
   CampaignGeneratorOutputs,
@@ -31,21 +35,42 @@ function toDemoInput(input: CampaignGeneratorInput): DemoCampaignInput {
   };
 }
 
-function fromDemoOutput(output: DemoCampaignOutput): CampaignGeneratorOutputs {
-  return {
-    facebookPost: output.facebook_post,
-    instagramCaption: output.instagram_caption,
-    smsMessage: output.sms_message,
-    emailCampaign: output.email_campaign,
-    adHeadline: output.ad_headline,
-    callToActionSuggestions: output.cta_suggestions,
-  };
-}
-
 function simulateGenerationDelay() {
   return new Promise((resolve) => {
     setTimeout(resolve, DEMO_GENERATION_DELAY_MS);
   });
+}
+
+function mapMarketingType(campaignType: CampaignType) {
+  if (campaignType === "service_promo") return "service" as const;
+  if (campaignType === "seasonal_sale") return "sale" as const;
+  if (campaignType === "reactivation") return "reactivation" as const;
+  return "event" as const;
+}
+
+function enrichCampaignOutputs(
+  input: CampaignGeneratorInput,
+  output: DemoCampaignOutput,
+): CampaignGeneratorOutputs {
+  const layer = buildLeadCaptureLayer(
+    mapMarketingType(input.campaignType),
+    input.dealershipName,
+    `${input.campaignType.replace(/_/g, " ")} campaign`,
+  );
+  const enrich = (value: string) => enrichContentWithLeadTracking(value, layer);
+
+  return {
+    facebookPost: enrich(output.facebook_post),
+    instagramCaption: enrich(output.instagram_caption),
+    smsMessage: enrich(output.sms_message),
+    emailCampaign: enrich(output.email_campaign),
+    adHeadline: output.ad_headline,
+    callToActionSuggestions: [
+      ...output.cta_suggestions,
+      layer.primaryCta,
+      ...layer.trackingTriggers,
+    ],
+  };
 }
 
 export async function generateCampaignContent(
@@ -58,5 +83,6 @@ export async function generateCampaignContent(
       : undefined;
 
   await simulateGenerationDelay();
-  return fromDemoOutput(generateCampaign(toDemoInput(input), memory));
+  const output = generateCampaign(toDemoInput(input), memory);
+  return enrichCampaignOutputs(input, output);
 }

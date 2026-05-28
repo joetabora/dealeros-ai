@@ -1,3 +1,5 @@
+import { canExecuteScheduledAction } from "@/lib/approval-system/gates";
+import { getControlMode } from "@/lib/approval-system/repository";
 import { runAutopilotForExecutedDealerships } from "@/lib/autopilot/service";
 import { getProviderForPlatform } from "@/lib/execution-engine/providers";
 import type {
@@ -58,10 +60,37 @@ export async function executeDueActions(
   };
 
   const affectedDealerships = new Set<string>();
+  const controlModeCache = new Map<string, Awaited<ReturnType<typeof getControlMode>>>();
 
   for (const action of actions) {
     summary.processed += 1;
     affectedDealerships.add(action.dealershipName);
+
+    let controlMode = controlModeCache.get(action.dealershipName);
+    if (!controlMode) {
+      controlMode = userId
+        ? await getControlMode(userId, action.dealershipName)
+        : "manual";
+      controlModeCache.set(action.dealershipName, controlMode);
+    }
+
+    const allowed = await canExecuteScheduledAction({
+      scheduledActionId: action.id,
+      userId,
+      dealershipName: action.dealershipName,
+      controlMode,
+    });
+
+    if (!allowed) {
+      summary.failed += 1;
+      summary.results.push({
+        actionId: action.id,
+        platform: action.platform,
+        success: false,
+        error: "Blocked — awaiting human approval.",
+      });
+      continue;
+    }
 
     const provider = getProviderForPlatform(action.platform);
     const metadata = buildMetadata(action, simulate);
@@ -86,6 +115,15 @@ export async function executeDueActions(
           providerMessageId: result.providerMessageId,
           simulated: result.simulated ?? simulate,
         });
+
+        if (userId) {
+          const { captureLeadFromExecution } = await import("@/lib/leads/capture-engine");
+          await captureLeadFromExecution({
+            userId,
+            action,
+            simulate: true,
+          });
+        }
       } else {
         await markActionExecutionFailed({
           actionId: action.id,

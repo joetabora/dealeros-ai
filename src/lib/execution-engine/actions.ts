@@ -13,6 +13,7 @@ function revalidateExecutionRoutes() {
   revalidatePath("/dashboard/calendar");
   revalidatePath("/dashboard/calendar/preview");
   revalidatePath("/dashboard/autopilot");
+  revalidatePath("/dashboard/leads");
 }
 
 export async function runExecutionForUserAction(): Promise<{

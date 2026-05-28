@@ -13,6 +13,7 @@ import type { CampaignAnalyticsRecord } from "@/types/analytics";
 type CampaignAnalyticsCardProps = {
   record: CampaignAnalyticsRecord;
   rank?: number;
+  capturedLeads?: number;
 };
 
 function formatTypeLabel(value: string) {
@@ -25,7 +26,11 @@ function scoreColor(score: number) {
   return "text-amber-400";
 }
 
-export function CampaignAnalyticsCard({ record, rank }: CampaignAnalyticsCardProps) {
+export function CampaignAnalyticsCard({
+  record,
+  rank,
+  capturedLeads = 0,
+}: CampaignAnalyticsCardProps) {
   return (
     <Card className="border-border/60 bg-card/40">
       <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-3">
@@ -52,11 +57,16 @@ export function CampaignAnalyticsCard({ record, rank }: CampaignAnalyticsCardPro
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <Metric label="Est. revenue" value={formatCurrency(record.estimatedRevenueImpact)} />
           <Metric label="Traffic lift" value={`+${record.estimatedTrafficLift}%`} />
           <Metric label="Engagement" value={record.estimatedEngagement.toLocaleString()} />
           <Metric label="Est. leads" value={String(record.estimatedLeads)} />
+          <Metric
+            label="Captured leads"
+            value={String(capturedLeads)}
+            highlight={capturedLeads > 0}
+          />
         </div>
       </CardContent>
     </Card>
@@ -66,13 +76,16 @@ export function CampaignAnalyticsCard({ record, rank }: CampaignAnalyticsCardPro
 type MetricProps = {
   label: string;
   value: string;
+  highlight?: boolean;
 };
 
-function Metric({ label, value }: MetricProps) {
+function Metric({ label, value, highlight }: MetricProps) {
   return (
     <div className="rounded-lg border border-border/60 bg-background/30 p-3">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-semibold">{value}</p>
+      <p className={cn("mt-1 text-sm font-semibold", highlight && "text-emerald-400")}>
+        {value}
+      </p>
     </div>
   );
 }

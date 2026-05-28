@@ -34,6 +34,8 @@ export type MarketingTimelineItem = {
   content: string;
 };
 
+import type { LeadCaptureLayer } from "@/types/leads";
+
 export type MarketingRevenueLayer = {
   serviceUpsell: string;
   salesCta: string;
@@ -61,6 +63,7 @@ export type FullMarketingCampaignOutput = {
   };
   timeline: MarketingTimelineItem[];
   revenueLayer: MarketingRevenueLayer;
+  leadCaptureLayer: LeadCaptureLayer;
 };
 
 export type MarketingCampaign = {
@@ -86,4 +89,5 @@ export const MARKETING_SECTIONS = [
   { id: "email", label: "Email Campaign" },
   { id: "timeline", label: "Timeline Engine" },
   { id: "revenue", label: "Revenue Injection Layer" },
+  { id: "leads", label: "Lead Capture Layer" },
 ] as const;

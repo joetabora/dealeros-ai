@@ -33,6 +33,9 @@ export type PerformanceAnalysis = {
   whatsWorking: string[];
   whatsDeclining: string[];
   shouldChange: string[];
+  totalCapturedLeads: number;
+  topLeadSource: string | null;
+  leadConversionRate: number;
 };
 
 export type CampaignRecommendation = {

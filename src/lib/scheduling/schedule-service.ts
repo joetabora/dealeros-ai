@@ -1,3 +1,9 @@
+import { getControlMode } from "@/lib/approval-system/repository";
+import {
+  processScheduledActionsWithApproval,
+  queueItemsForManualApproval,
+} from "@/lib/approval-system/workflow";
+import { shouldScheduleOnGenerate } from "@/lib/approval-system/gates";
 import { revalidatePath } from "next/cache";
 
 import {
@@ -32,6 +38,63 @@ function revalidateCalendarRoutes() {
   revalidatePath("/dashboard/calendar/preview");
   revalidatePath("/dashboard/analytics");
   revalidatePath("/dashboard/autopilot");
+  revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard/approvals");
+  revalidatePath("/dashboard/marketing");
+  revalidatePath("/dashboard/events");
+  revalidatePath("/dashboard/campaigns");
+}
+
+async function finalizeScheduledBatch({
+  userId,
+  dealershipName,
+  resolved,
+  controlMode,
+  context,
+}: {
+  userId: string;
+  dealershipName: string;
+  resolved: Array<{
+    dealershipName: string;
+    campaignId: string | null;
+    eventId?: string | null;
+    platform: ScheduledMarketingAction["platform"];
+    contentType: ScheduledMarketingAction["contentType"];
+    content: string;
+    scheduledFor: string;
+    status: "pending";
+  }>;
+  controlMode: Awaited<ReturnType<typeof getControlMode>>;
+  context?: { campaignLabel?: string; eventName?: string };
+}): Promise<ScheduledMarketingAction[]> {
+  if (!shouldScheduleOnGenerate(controlMode)) {
+    await queueItemsForManualApproval({
+      userId,
+      items: resolved.map((item) => ({
+        dealershipName: item.dealershipName,
+        campaignId: item.campaignId,
+        eventId: item.eventId ?? null,
+        platform: item.platform,
+        contentType: item.contentType,
+        content: item.content,
+        scheduledFor: item.scheduledFor,
+      })),
+      controlMode,
+      context,
+    });
+    revalidateCalendarRoutes();
+    return [];
+  }
+
+  const saved = await insertScheduledActions({ userId, actions: resolved });
+  await processScheduledActionsWithApproval({
+    userId,
+    savedActions: saved,
+    controlMode,
+    context,
+  });
+  revalidateCalendarRoutes();
+  return saved;
 }
 
 export async function scheduleFromMarketingCampaign({
@@ -45,6 +108,7 @@ export async function scheduleFromMarketingCampaign({
   outputs: FullMarketingCampaignOutput;
   campaignId: string;
 }): Promise<ScheduledMarketingAction[]> {
+  const controlMode = await getControlMode(userId, input.dealershipName);
   const items = buildMarketingScheduleItems(outputs);
   const resolved = assignScheduleTimestamps(items, {
     anchorDate: resolveMarketingAnchorDate(input),
@@ -52,16 +116,23 @@ export async function scheduleFromMarketingCampaign({
     campaignId,
   });
 
-  const saved = await insertScheduledActions({ userId, actions: resolved });
-  revalidateCalendarRoutes();
-
-  await recordMarketingCampaignAnalytics({
+  const saved = await finalizeScheduledBatch({
     userId,
-    input,
-    output: outputs,
-    campaignId,
-    scheduledActions: saved,
+    dealershipName: input.dealershipName,
+    resolved,
+    controlMode,
+    context: { campaignLabel: input.eventOrOfferName },
   });
+
+  if (saved.length > 0) {
+    await recordMarketingCampaignAnalytics({
+      userId,
+      input,
+      output: outputs,
+      campaignId,
+      scheduledActions: saved,
+    });
+  }
 
   return saved;
 }
@@ -77,6 +148,7 @@ export async function scheduleFromEvent({
 }): Promise<ScheduledMarketingAction[]> {
   if (!event.promotionPack) return [];
 
+  const controlMode = await getControlMode(userId, event.dealershipName);
   const items = buildEventScheduleItems(event.promotionPack);
   const resolved = assignScheduleTimestamps(items, {
     anchorDate: resolveEventAnchorDate(event),
@@ -85,14 +157,21 @@ export async function scheduleFromEvent({
     eventId: event.id,
   });
 
-  const saved = await insertScheduledActions({ userId, actions: resolved });
-  revalidateCalendarRoutes();
-
-  await recordEventCampaignAnalytics({
+  const saved = await finalizeScheduledBatch({
     userId,
-    event,
-    scheduledActions: saved,
+    dealershipName: event.dealershipName,
+    resolved,
+    controlMode,
+    context: { eventName: event.eventName },
   });
+
+  if (saved.length > 0) {
+    await recordEventCampaignAnalytics({
+      userId,
+      event,
+      scheduledActions: saved,
+    });
+  }
 
   return saved;
 }
@@ -110,6 +189,7 @@ export async function scheduleFromCampaignGenerator({
   outputs: CampaignGeneratorOutputs;
   input: CampaignGeneratorInput;
 }): Promise<ScheduledMarketingAction[]> {
+  const controlMode = await getControlMode(userId, dealershipName);
   const items = buildCampaignScheduleItems(outputs);
   const resolved = assignScheduleTimestamps(items, {
     anchorDate: resolveCampaignAnchorDate(),
@@ -117,15 +197,22 @@ export async function scheduleFromCampaignGenerator({
     campaignId,
   });
 
-  const saved = await insertScheduledActions({ userId, actions: resolved });
-  revalidateCalendarRoutes();
-
-  await recordLegacyCampaignAnalytics({
+  const saved = await finalizeScheduledBatch({
     userId,
-    input,
-    campaignId,
-    scheduledActions: saved,
+    dealershipName,
+    resolved,
+    controlMode,
+    context: { campaignLabel: `${input.campaignType.replace(/_/g, " ")} campaign` },
   });
+
+  if (saved.length > 0) {
+    await recordLegacyCampaignAnalytics({
+      userId,
+      input,
+      campaignId,
+      scheduledActions: saved,
+    });
+  }
 
   return saved;
 }

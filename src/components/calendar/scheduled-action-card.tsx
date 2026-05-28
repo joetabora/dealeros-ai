@@ -1,3 +1,4 @@
+import { ApprovalStatusBadge } from "@/components/approvals/approval-status-badge";
 import { CopyButton } from "@/components/campaigns/copy-button";
 import { formatScheduledDisplay } from "@/lib/scheduling/constants";
 import { Badge } from "@/components/ui/badge";
@@ -17,12 +18,14 @@ import {
   STATUS_LABELS,
   type ScheduledMarketingAction,
 } from "@/types/scheduling";
+import type { ApprovalStatus } from "@/types/approval";
 
 type ScheduledActionCardProps = {
   action: ScheduledMarketingAction;
   campaignLabel?: string;
   demoMode?: boolean;
   simulated?: boolean;
+  approvalStatus?: ApprovalStatus | null;
 };
 
 export function ScheduledActionCard({
@@ -30,6 +33,7 @@ export function ScheduledActionCard({
   campaignLabel,
   demoMode = false,
   simulated = false,
+  approvalStatus,
 }: ScheduledActionCardProps) {
   const displayStatus = simulated ? "sent" : action.status;
   const isSent = displayStatus === "sent";
@@ -78,6 +82,12 @@ export function ScheduledActionCard({
               <Badge variant="secondary">
                 Exec: {EXECUTION_STATUS_LABELS[action.executionStatus]}
               </Badge>
+            ) : null}
+            {!demoMode ? (
+              <ApprovalStatusBadge
+                status={approvalStatus}
+                scheduled={action.status === "pending" && !approvalStatus}
+              />
             ) : null}
           </div>
           {action.executedAt ? (

@@ -5,15 +5,26 @@ import {
   listCampaignAnalytics,
 } from "@/lib/analytics/repository";
 import { requireSession } from "@/lib/auth/session";
+import { buildLeadCountsByCampaign, listLeads } from "@/lib/leads/repository";
 import type { CampaignAnalyticsRecord } from "@/types/analytics";
 
 export default async function AnalyticsPage() {
   const session = await requireSession();
 
   let records: CampaignAnalyticsRecord[] = [];
+  let capturedLeadTotal = 0;
+  let leadCountsByCampaign: Record<string, number> = {};
 
   try {
-    records = await listCampaignAnalytics(50);
+    const [analyticsRecords, leads] = await Promise.all([
+      listCampaignAnalytics(50),
+      listLeads(200),
+    ]);
+    records = analyticsRecords;
+    capturedLeadTotal = leads.length;
+    leadCountsByCampaign = Object.fromEntries(
+      buildLeadCountsByCampaign(leads).entries(),
+    );
   } catch {
     records = [];
   }
@@ -30,6 +41,8 @@ export default async function AnalyticsPage() {
         records={records}
         summary={summary}
         dealershipName={session.dealer.name}
+        capturedLeadTotal={capturedLeadTotal}
+        leadCountsByCampaign={leadCountsByCampaign}
       />
     </PageContainer>
   );

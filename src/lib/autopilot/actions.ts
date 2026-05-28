@@ -29,6 +29,7 @@ function revalidateAutopilotRoutes() {
   revalidatePath("/dashboard/autopilot");
   revalidatePath("/dashboard/marketing");
   revalidatePath("/dashboard/analytics");
+  revalidatePath("/dashboard/leads");
   revalidatePath("/dashboard/calendar");
 }
 

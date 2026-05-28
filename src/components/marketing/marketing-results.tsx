@@ -234,6 +234,41 @@ export function MarketingResults({
           <ContentCard title="Inventory mention" value={outputs.revenueLayer.inventoryMention} />
         </div>
       </section>
+
+      {outputs.leadCaptureLayer ? (
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight">
+            Lead Capture Layer
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <ContentCard
+              title="Primary CTA"
+              badge="Lead tracking"
+              value={outputs.leadCaptureLayer.primaryCta}
+            />
+            <ContentCard
+              title="Conversion potential"
+              badge={`Score ${outputs.leadCaptureLayer.conversionPotentialScore}`}
+              value={`Estimated ${outputs.leadCaptureLayer.estimatedLeads} leads from this campaign. Every CTA interaction creates a structured lead in your pipeline.`}
+            />
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {outputs.leadCaptureLayer.trackingTriggers.map((trigger, index) => (
+              <ContentCard
+                key={`cta-${index}`}
+                title={`Tracking trigger ${index + 1}`}
+                badge="Capturable CTA"
+                value={trigger}
+              />
+            ))}
+          </div>
+          <ContentCard
+            title="SMS response keywords"
+            badge="Auto-capture"
+            value={outputs.leadCaptureLayer.smsKeywords.join(" · ")}
+          />
+        </section>
+      ) : null}
     </div>
   );
 }

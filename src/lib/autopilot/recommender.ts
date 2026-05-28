@@ -77,6 +77,17 @@ function formatTypeLabel(value: string) {
 }
 
 function pickMarketingType(analysis: PerformanceAnalysis): MarketingCampaignType {
+  if (analysis.totalCapturedLeads >= 3 && analysis.topLeadSource?.toLowerCase().includes("sms")) {
+    return "sale";
+  }
+
+  if (analysis.totalCapturedLeads >= 2 && analysis.leadConversionRate >= 20) {
+    const topRaw = analysis.topPerformingTypes[0]?.campaignType;
+    if (topRaw && TYPE_TO_MARKETING[topRaw]) {
+      return TYPE_TO_MARKETING[topRaw]!;
+    }
+  }
+
   const topRaw = analysis.topPerformingTypes[0]?.campaignType;
   if (topRaw && TYPE_TO_MARKETING[topRaw]) {
     return TYPE_TO_MARKETING[topRaw]!;
@@ -170,7 +181,11 @@ function buildReasoning(
   }
 
   if (analysis.engagementTrend === "declining") {
-    return "Engagement has dipped recently. A fresh community event with energetic tone should bring lot traffic back up.";
+    return "Engagement has dipped recently. A fresh community event with lead-capturable CTAs should bring lot traffic and contacts back up.";
+  }
+
+  if (analysis.totalCapturedLeads >= 3) {
+    return `${analysis.totalCapturedLeads} leads captured so far — prioritize ${formatTypeLabel(campaignType)} campaigns with the same high-converting CTA formats.`;
   }
 
   if (memory.preferredTone) {

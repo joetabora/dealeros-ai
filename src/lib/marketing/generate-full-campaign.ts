@@ -4,6 +4,10 @@ import { SeededRandom } from "@/lib/demo-ai/types";
 import { scaleMemoryForProximity } from "@/lib/events/promotion-engine/event-intelligence";
 import { injectRevenueHook } from "@/lib/events/promotion-engine/revenue-hooks";
 import {
+  buildLeadCaptureLayer,
+  enrichContentWithLeadTracking,
+} from "@/lib/leads/cta-tracking";
+import {
   formatMarketingDate,
   getDaysUntilCampaign,
   getMarketingTypeProfile,
@@ -287,26 +291,48 @@ export function generateFullMarketingCampaign(
   ] as [string, string, string];
 
   const revenueLayer = buildRevenueLayer(input);
+  const leadCaptureLayer = buildLeadCaptureLayer(
+    input.campaignType,
+    input.dealershipName,
+    input.eventOrOfferName,
+  );
+
+  const enrich = (content: string) =>
+    enrichContentWithLeadTracking(content, leadCaptureLayer);
 
   return {
     generatedAt: new Date().toISOString(),
     strategy: buildStrategy(input, scaledMemory),
     socialMedia: {
-      facebookPosts,
-      instagramCaptions,
-      reelScript: buildReelScript(input, scaledMemory),
+      facebookPosts: [
+        enrich(facebookPosts[0]),
+        enrich(facebookPosts[1]),
+        enrich(facebookPosts[2]),
+      ],
+      instagramCaptions: [
+        enrich(instagramCaptions[0]),
+        enrich(instagramCaptions[1]),
+        enrich(instagramCaptions[2]),
+      ],
+      reelScript: enrich(buildReelScript(input, scaledMemory)),
     },
     sms: {
-      announcement,
-      reminder,
-      finalUrgency,
+      announcement: enrich(announcement),
+      reminder: enrich(reminder),
+      finalUrgency: enrich(finalUrgency),
     },
     email: {
       subjectLines,
-      body: emailBody,
-      ctaSection: `${revenueLayer.salesCta}\n${revenueLayer.serviceUpsell}${revenueLayer.testRideCta ? `\n${revenueLayer.testRideCta}` : ""}\n${revenueLayer.inventoryMention}`,
+      body: enrich(emailBody),
+      ctaSection: enrich(
+        `${revenueLayer.salesCta}\n${revenueLayer.serviceUpsell}${revenueLayer.testRideCta ? `\n${revenueLayer.testRideCta}` : ""}\n${revenueLayer.inventoryMention}`,
+      ),
     },
-    timeline: buildTimeline(input, scaledMemory),
+    timeline: buildTimeline(input, scaledMemory).map((item) => ({
+      ...item,
+      content: enrich(item.content),
+    })),
     revenueLayer,
+    leadCaptureLayer,
   };
 }

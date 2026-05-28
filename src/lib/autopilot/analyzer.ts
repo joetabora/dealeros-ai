@@ -1,4 +1,5 @@
 import type { CampaignAnalyticsRecord } from "@/types/analytics";
+import type { DealershipLead, LeadSource } from "@/types/leads";
 import type { DealershipMemoryProfile } from "@/types/memory";
 import type {
   CampaignTypePerformance,
@@ -7,6 +8,7 @@ import type {
   PlatformMixStats,
 } from "@/types/autopilot";
 import type { ScheduledMarketingAction } from "@/types/scheduling";
+import { LEAD_SOURCE_LABELS } from "@/types/leads";
 
 const EVENT_TYPES = new Set([
   "event",
@@ -211,6 +213,80 @@ function buildShouldChange(
   return items.slice(0, 3);
 }
 
+function computeLeadMetrics(leads: DealershipLead[]) {
+  const converted = leads.filter((lead) => lead.status === "converted").length;
+  const bySource = new Map<LeadSource, number>();
+
+  for (const lead of leads) {
+    bySource.set(lead.source, (bySource.get(lead.source) ?? 0) + 1);
+  }
+
+  const topSourceEntry = [...bySource.entries()].sort(
+    (left, right) => right[1] - left[1],
+  )[0];
+
+  return {
+    totalCapturedLeads: leads.length,
+    topLeadSource: topSourceEntry
+      ? LEAD_SOURCE_LABELS[topSourceEntry[0]]
+      : null,
+    leadConversionRate:
+      leads.length > 0 ? Math.round((converted / leads.length) * 100) : 0,
+  };
+}
+
+function buildLeadWhatsWorking(
+  leadMetrics: ReturnType<typeof computeLeadMetrics>,
+  leads: DealershipLead[],
+) {
+  const items: string[] = [];
+
+  if (leadMetrics.totalCapturedLeads > 0) {
+    items.push(
+      `${leadMetrics.totalCapturedLeads} lead${leadMetrics.totalCapturedLeads === 1 ? "" : "s"} captured from marketing engagement.`,
+    );
+  }
+
+  if (leadMetrics.topLeadSource) {
+    items.push(`${leadMetrics.topLeadSource} is your strongest lead source right now.`);
+  }
+
+  if (leadMetrics.leadConversionRate >= 20) {
+    items.push(
+      `${leadMetrics.leadConversionRate}% of captured leads have converted — keep the same CTA formats.`,
+    );
+  }
+
+  if (leads.filter((lead) => lead.source === "sms").length >= 2) {
+    items.push("SMS keyword responses are producing high-intent leads.");
+  }
+
+  return items;
+}
+
+function buildLeadShouldChange(
+  leadMetrics: ReturnType<typeof computeLeadMetrics>,
+  platformMix: PlatformMixStats,
+) {
+  const items: string[] = [];
+
+  if (leadMetrics.totalCapturedLeads === 0) {
+    items.push(
+      "Enable lead-capturable CTAs on every channel — SMS YES/INFO/BOOK replies convert fastest.",
+    );
+  }
+
+  if (platformMix.sms >= 2 && leadMetrics.totalCapturedLeads < 3) {
+    items.push("SMS campaigns are running but lead capture is low — tighten BOOK/INFO CTAs.");
+  }
+
+  if (leadMetrics.leadConversionRate > 0 && leadMetrics.leadConversionRate < 15) {
+    items.push("Follow up on new leads within 24 hours to improve conversion.");
+  }
+
+  return items;
+}
+
 function defaultAnalysis(dealershipName: string): PerformanceAnalysis {
   return {
     dealershipName,
@@ -234,6 +310,9 @@ function defaultAnalysis(dealershipName: string): PerformanceAnalysis {
     shouldChange: [
       "Start with a community event to build engagement momentum.",
     ],
+    totalCapturedLeads: 0,
+    topLeadSource: null,
+    leadConversionRate: 0,
   };
 }
 
@@ -242,12 +321,19 @@ export function analyzePerformanceHistory({
   analytics,
   memory,
   scheduledActions,
+  leads = [],
 }: {
   dealershipName: string;
   analytics: CampaignAnalyticsRecord[];
   memory: DealershipMemoryProfile;
   scheduledActions: ScheduledMarketingAction[];
+  leads?: DealershipLead[];
 }): PerformanceAnalysis {
+  const dealershipLeads = leads.filter(
+    (lead) => lead.dealershipName === dealershipName,
+  );
+  const leadMetrics = computeLeadMetrics(dealershipLeads);
+
   const dealershipAnalytics = analytics.filter(
     (record) => record.dealershipName === dealershipName,
   );
@@ -256,7 +342,18 @@ export function analyzePerformanceHistory({
   );
 
   if (dealershipAnalytics.length === 0) {
-    return defaultAnalysis(dealershipName);
+    return {
+      ...defaultAnalysis(dealershipName),
+      ...leadMetrics,
+      whatsWorking: [
+        ...defaultAnalysis(dealershipName).whatsWorking,
+        ...buildLeadWhatsWorking(leadMetrics, dealershipLeads),
+      ].slice(0, 3),
+      shouldChange: [
+        ...defaultAnalysis(dealershipName).shouldChange,
+        ...buildLeadShouldChange(leadMetrics, countPlatforms(dealershipActions)),
+      ].slice(0, 3),
+    };
   }
 
   const topPerformingTypes = groupByType(dealershipAnalytics);
@@ -293,8 +390,15 @@ export function analyzePerformanceHistory({
     platformMix,
     averageScore,
     averageTrafficLift,
-    whatsWorking: buildWhatsWorking(topPerformingTypes, memory, trend),
+    whatsWorking: [
+      ...buildWhatsWorking(topPerformingTypes, memory, trend),
+      ...buildLeadWhatsWorking(leadMetrics, dealershipLeads),
+    ].slice(0, 3),
     whatsDeclining: buildWhatsDeclining(topPerformingTypes, trend),
-    shouldChange: buildShouldChange(topPerformingTypes, platformMix, trend),
+    shouldChange: [
+      ...buildShouldChange(topPerformingTypes, platformMix, trend),
+      ...buildLeadShouldChange(leadMetrics, platformMix),
+    ].slice(0, 3),
+    ...leadMetrics,
   };
 }

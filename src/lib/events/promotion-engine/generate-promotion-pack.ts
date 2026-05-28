@@ -7,6 +7,10 @@ import {
   scaleMemoryForProximity,
 } from "@/lib/events/promotion-engine/event-intelligence";
 import { injectRevenueHook } from "@/lib/events/promotion-engine/revenue-hooks";
+import {
+  buildLeadCaptureLayer,
+  enrichContentWithLeadTracking,
+} from "@/lib/leads/cta-tracking";
 import { formatEventDate } from "@/lib/events/validation";
 import type {
   DealershipEvent,
@@ -197,7 +201,13 @@ function generateSlotContent(
 
   const platformContent = extractPlatformContent(output, slot.platform);
   const withHook = injectRevenueHook(platformContent, rng);
-  return buildSlotContent(event, slot, withHook);
+  const leadLayer = buildLeadCaptureLayer(
+    "event",
+    event.dealershipName,
+    event.eventName,
+  );
+  const withLeadTracking = enrichContentWithLeadTracking(withHook, leadLayer);
+  return buildSlotContent(event, slot, withLeadTracking);
 }
 
 export function generateEventPromotionPack(
