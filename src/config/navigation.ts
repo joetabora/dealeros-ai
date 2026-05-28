@@ -1,9 +1,11 @@
 import {
   CalendarDays,
+  CalendarRange,
   Handshake,
   LayoutDashboard,
   Megaphone,
   RefreshCw,
+  Rocket,
   Settings,
   Sparkles,
 } from "lucide-react";
@@ -19,6 +21,19 @@ export const dashboardNavigation: NavSection[] = [
         href: "/dashboard",
         icon: LayoutDashboard,
         description: "Pipeline health and daily performance",
+      },
+      {
+        title: "Marketing",
+        href: "/dashboard/marketing",
+        icon: Rocket,
+        description: "One-click full campaign generation — the core revenue engine",
+        badge: "Core",
+      },
+      {
+        title: "Calendar",
+        href: "/dashboard/calendar",
+        icon: CalendarRange,
+        description: "Auto-scheduled marketing timeline across every channel",
       },
       {
         title: "Live Demo",

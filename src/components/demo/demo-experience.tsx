@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Handshake, Sparkles, Wand2 } from "lucide-react";
+import { Handshake, Sparkles, Wand2, CalendarRange } from "lucide-react";
 
 import { CampaignResults } from "@/components/campaigns/campaign-results";
 import { CopyButton } from "@/components/campaigns/copy-button";
@@ -193,6 +193,28 @@ export function DemoExperience() {
               </Card>
 
               <CampaignResults outputs={pack.outputs} editable={false} />
+
+              <Card className="border-border/60 bg-card/50">
+                <CardContent className="flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:justify-between sm:text-left">
+                  <div>
+                    <p className="font-semibold">See the full marketing timeline</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Preview how DealerOS auto-schedules every post, SMS, and
+                      email for {selected.name} — T-7 through post-event.
+                    </p>
+                  </div>
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    render={
+                      <Link href={`/dashboard/calendar/preview?dealership=${selected.id}`} />
+                    }
+                  >
+                    <CalendarRange />
+                    Preview Campaign Timeline
+                  </Button>
+                </CardContent>
+              </Card>
 
               <Card className="border-primary/20 bg-gradient-to-br from-primary/10 via-card/60 to-card/40">
                 <CardContent className="flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:justify-between sm:text-left">

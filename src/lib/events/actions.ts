@@ -11,6 +11,7 @@ import {
   updateEventPromotionPack,
 } from "@/lib/events/repository";
 import { parseEventInput } from "@/lib/events/validation";
+import { scheduleFromEvent } from "@/lib/scheduling/schedule-service";
 import { requireSession } from "@/lib/auth/session";
 import type { EventFormState, EventInput } from "@/types/event";
 
@@ -31,6 +32,7 @@ function getActionErrorMessage(error: unknown) {
 
 function revalidateEventRoutes(eventId?: string) {
   revalidatePath("/dashboard/events");
+  revalidatePath("/dashboard/calendar");
 
   if (eventId) {
     revalidatePath(`/dashboard/events/${eventId}`);
@@ -60,6 +62,11 @@ async function createEventWithPromotion({
   await syncEventMemory({
     userId,
     dealershipName,
+    event,
+  });
+
+  await scheduleFromEvent({
+    userId,
     event,
   });
 

@@ -9,6 +9,7 @@ const PUBLIC_DASHBOARD_ROUTES = [
   "/dashboard/demo",
   "/dashboard/closing-kit",
   "/dashboard/proposal",
+  "/dashboard/calendar/preview",
 ];
 
 function isPublicDashboardRoute(pathname: string) {

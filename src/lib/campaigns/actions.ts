@@ -10,6 +10,7 @@ import {
   updateCampaign,
 } from "@/lib/campaigns/repository";
 import { parseCampaignInput } from "@/lib/campaigns/validation";
+import { scheduleFromCampaignGenerator } from "@/lib/scheduling/schedule-service";
 import { requireSession } from "@/lib/auth/session";
 import type {
   CampaignFormState,
@@ -34,6 +35,7 @@ function getActionErrorMessage(error: unknown) {
 function revalidateCampaignRoutes() {
   revalidatePath("/dashboard/campaigns");
   revalidatePath("/dashboard/campaigns/new");
+  revalidatePath("/dashboard/calendar");
 }
 
 export async function generateCampaignAction(
@@ -54,6 +56,13 @@ export async function generateCampaignAction(
       userId: session.user.id,
       dealershipName: input.dealershipName,
       input,
+      outputs,
+    });
+
+    await scheduleFromCampaignGenerator({
+      userId: session.user.id,
+      dealershipName: input.dealershipName,
+      campaignId: generation.id,
       outputs,
     });
 
