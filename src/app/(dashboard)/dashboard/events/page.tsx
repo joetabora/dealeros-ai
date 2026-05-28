@@ -1,17 +1,29 @@
-import { PageContainer, PageHeader, PlaceholderPanel } from "@/components/layout/page-shell";
-import { Button } from "@/components/ui/button";
+import { EventsWorkspace } from "@/components/events/events-workspace";
+import { PageContainer, PageHeader } from "@/components/layout/page-shell";
+import { listEvents } from "@/lib/events/repository";
+import { requireSession } from "@/lib/auth/session";
+import type { DealershipEvent } from "@/types/event";
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const session = await requireSession();
+
+  let events: DealershipEvent[] = [];
+
+  try {
+    events = await listEvents();
+  } catch {
+    events = [];
+  }
+
   return (
     <PageContainer>
       <PageHeader
         title="Events"
         description="Plan dealership events, track registrations, and measure show-floor conversion."
-        actions={<Button>Schedule event</Button>}
       />
-      <PlaceholderPanel
-        title="Event calendar"
-        description="Upcoming activations, capacity planning, and post-event follow-up workflows will appear here."
+      <EventsWorkspace
+        initialEvents={events}
+        dealershipName={session.dealer.name}
       />
     </PageContainer>
   );
