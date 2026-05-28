@@ -1,17 +1,29 @@
-import { PageContainer, PageHeader, PlaceholderPanel } from "@/components/layout/page-shell";
-import { Button } from "@/components/ui/button";
+import { CampaignGenerator } from "@/components/campaigns/campaign-generator";
+import { PageContainer, PageHeader } from "@/components/layout/page-shell";
+import { listAiGenerations } from "@/lib/campaigns/repository";
+import { requireSession } from "@/lib/auth/session";
+import type { AiGeneration } from "@/types/campaign";
 
-export default function CampaignsPage() {
+export default async function CampaignsPage() {
+  const session = await requireSession();
+
+  let history: AiGeneration[] = [];
+
+  try {
+    history = await listAiGenerations();
+  } catch {
+    history = [];
+  }
+
   return (
     <PageContainer>
       <PageHeader
-        title="Campaigns"
-        description="Build, launch, and monitor AI-assisted outbound and nurture sequences."
-        actions={<Button>Create campaign</Button>}
+        title="AI Campaign Generator"
+        description="Generate dealership-native marketing copy for events, promos, reactivation, and seasonal pushes across every channel."
       />
-      <PlaceholderPanel
-        title="Campaign workspace"
-        description="Campaign builder, audience targeting, and performance analytics will live here."
+      <CampaignGenerator
+        initialHistory={history}
+        defaultDealershipName={session.dealer.name}
       />
     </PageContainer>
   );
