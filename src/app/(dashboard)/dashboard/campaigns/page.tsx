@@ -1,30 +1,37 @@
-import { CampaignGenerator } from "@/components/campaigns/campaign-generator";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+
+import { CampaignHistoryList } from "@/components/campaigns/campaign-history-list";
 import { PageContainer, PageHeader } from "@/components/layout/page-shell";
-import { listAiGenerations } from "@/lib/campaigns/repository";
+import { Button } from "@/components/ui/button";
+import { listCampaigns } from "@/lib/campaigns/repository";
 import { requireSession } from "@/lib/auth/session";
-import type { AiGeneration } from "@/types/campaign";
+import type { Campaign } from "@/types/campaign";
 
-export default async function CampaignsPage() {
-  const session = await requireSession();
+export default async function CampaignsHistoryPage() {
+  await requireSession();
 
-  let history: AiGeneration[] = [];
+  let campaigns: Campaign[] = [];
 
   try {
-    history = await listAiGenerations();
+    campaigns = await listCampaigns();
   } catch {
-    history = [];
+    campaigns = [];
   }
 
   return (
     <PageContainer>
       <PageHeader
-        title="AI Campaign Generator"
-        description="Generate dealership-native marketing copy for events, promos, reactivation, and seasonal pushes across every channel."
+        title="Campaign History"
+        description="Every generated campaign is saved automatically. Revisit, copy, and reuse your dealership marketing packages."
+        actions={
+          <Button render={<Link href="/dashboard/campaigns/new" />}>
+            <Plus />
+            New campaign
+          </Button>
+        }
       />
-      <CampaignGenerator
-        initialHistory={history}
-        defaultDealershipName={session.dealer.name}
-      />
+      <CampaignHistoryList campaigns={campaigns} />
     </PageContainer>
   );
 }

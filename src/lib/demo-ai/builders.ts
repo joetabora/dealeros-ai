@@ -17,17 +17,11 @@ import {
   SMS_URGENCY,
   truncate,
 } from "@/lib/demo-ai/pools";
+import { pickMemoryFacebookFormat } from "@/lib/demo-ai/memory-influence";
 import type { DemoCampaignOutput, GenerationRuntime } from "@/lib/demo-ai/types";
 
-type FacebookFormat = "hook-details-cta" | "hook-emotional-details-cta" | "question-hook-details-cta" | "short-hype";
-
 function buildFacebookParts(runtime: GenerationRuntime): string[] {
-  const format = runtime.rng.pick([
-    "hook-details-cta",
-    "hook-emotional-details-cta",
-    "question-hook-details-cta",
-    "short-hype",
-  ] as const satisfies FacebookFormat[]);
+  const format = pickMemoryFacebookFormat(runtime, runtime.memory);
 
   const details = pickFromPool(getDetailsPool(runtime.input.campaign_type), runtime);
   const cta = buildCta(runtime);

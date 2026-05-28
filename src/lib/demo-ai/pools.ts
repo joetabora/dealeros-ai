@@ -1,4 +1,5 @@
 import type { DemoCampaignType, GenerationRuntime, SeededRandom } from "@/lib/demo-ai/types";
+import { applyMemoryToCtaChance } from "@/lib/demo-ai/memory-influence";
 
 type PoolBuilder = (runtime: GenerationRuntime) => string;
 
@@ -186,7 +187,12 @@ export function buildCta(runtime: GenerationRuntime, includeDealer = true): stri
     return phrase;
   }
 
-  return rng.chance(context.urgencyLevel >= 4 ? 0.65 : 0.4)
+  return rng.chance(
+    applyMemoryToCtaChance(
+      context.urgencyLevel >= 4 ? 0.65 : 0.4,
+      runtime.memory,
+    ),
+  )
     ? dealerCta
     : `${phrase} — ${input.dealership_name}`;
 }

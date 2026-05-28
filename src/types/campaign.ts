@@ -40,7 +40,7 @@ export type CampaignGeneratorOutputs = {
   callToActionSuggestions: string[];
 };
 
-export type AiGeneration = {
+export type Campaign = {
   id: string;
   userId: string;
   dealershipName: string;
@@ -50,9 +50,12 @@ export type AiGeneration = {
   createdAt: string;
 };
 
+/** @deprecated Use Campaign */
+export type AiGeneration = Campaign;
+
 export type CampaignFormState = {
   error?: string;
-  generation?: AiGeneration;
+  generation?: Campaign;
 };
 
 export const OUTPUT_FIELDS: Array<{

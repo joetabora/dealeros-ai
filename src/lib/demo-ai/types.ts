@@ -1,3 +1,5 @@
+import type { DealershipMemoryProfile } from "@/types/memory";
+
 export type DemoCampaignType =
   | "event"
   | "service"
@@ -49,6 +51,7 @@ export type GenerationRuntime = {
   input: DemoCampaignInput;
   dealerPlacement: DealerPlacement;
   useRhetoricalQuestion: boolean;
+  memory?: DealershipMemoryProfile;
 };
 
 export class SeededRandom {

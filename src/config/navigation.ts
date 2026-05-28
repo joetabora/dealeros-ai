@@ -22,7 +22,7 @@ export const dashboardNavigation: NavSection[] = [
         title: "Campaigns",
         href: "/dashboard/campaigns",
         icon: Megaphone,
-        description: "Outbound and nurture sequences",
+        description: "Campaign history, AI generation, and saved marketing packages.",
       },
       {
         title: "Events",

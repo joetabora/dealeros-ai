@@ -1,9 +1,13 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { generateCampaignContent } from "@/lib/campaigns/generate-content";
+import { syncDealershipMemory } from "@/lib/campaigns/memory/analyzer";
 import {
-  createAiGeneration,
-  updateAiGeneration,
+  createCampaign,
+  deleteCampaign,
+  updateCampaign,
 } from "@/lib/campaigns/repository";
 import { parseCampaignInput } from "@/lib/campaigns/validation";
 import { requireSession } from "@/lib/auth/session";
@@ -14,14 +18,22 @@ import type {
 
 function getActionErrorMessage(error: unknown) {
   if (error instanceof Error) {
-    if (error.message.includes("ai_generations")) {
-      return "Unable to save campaign. Confirm the ai_generations table exists in Supabase.";
+    if (
+      error.message.includes("campaigns") ||
+      error.message.includes("dealership_memory")
+    ) {
+      return "Unable to save campaign. Confirm Supabase migrations are applied.";
     }
 
     return error.message;
   }
 
   return "Something went wrong. Please try again.";
+}
+
+function revalidateCampaignRoutes() {
+  revalidatePath("/dashboard/campaigns");
+  revalidatePath("/dashboard/campaigns/new");
 }
 
 export async function generateCampaignAction(
@@ -31,13 +43,21 @@ export async function generateCampaignAction(
   try {
     const session = await requireSession();
     const input = parseCampaignInput(formData);
-    const outputs = await generateCampaignContent(input);
-    const generation = await createAiGeneration({
+    const outputs = await generateCampaignContent(input, session.user.id);
+    const generation = await createCampaign({
       userId: session.user.id,
       input,
       outputs,
     });
 
+    await syncDealershipMemory({
+      userId: session.user.id,
+      dealershipName: input.dealershipName,
+      input,
+      outputs,
+    });
+
+    revalidateCampaignRoutes();
     return { generation };
   } catch (error) {
     return { error: getActionErrorMessage(error) };
@@ -59,13 +79,28 @@ export async function saveCampaignAction(
     }
 
     const outputs = JSON.parse(outputsJson) as CampaignGeneratorOutputs;
-    const generation = await updateAiGeneration({
+    const generation = await updateCampaign({
       id: generationId,
       outputs,
     });
 
+    revalidateCampaignRoutes();
     return { generation };
   } catch (error) {
     return { error: getActionErrorMessage(error) };
+  }
+}
+
+export async function deleteCampaignAction(campaignId: string) {
+  try {
+    await requireSession();
+    await deleteCampaign(campaignId);
+    revalidateCampaignRoutes();
+    return { success: true as const };
+  } catch (error) {
+    return {
+      success: false as const,
+      error: getActionErrorMessage(error),
+    };
   }
 }

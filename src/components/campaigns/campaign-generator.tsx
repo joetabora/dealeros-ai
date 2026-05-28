@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useEffect, useMemo, useState } from "react";
 
 import { CampaignForm } from "@/components/campaigns/campaign-form";
@@ -29,7 +30,7 @@ import {
   getCampaignTypeLabel,
 } from "@/lib/campaigns/validation";
 import type {
-  AiGeneration,
+  Campaign,
   CampaignFormState,
   CampaignGeneratorOutputs,
 } from "@/types/campaign";
@@ -37,7 +38,7 @@ import type {
 const initialState: CampaignFormState = {};
 
 type CampaignGeneratorProps = {
-  initialHistory: AiGeneration[];
+  initialHistory: Campaign[];
   defaultDealershipName?: string;
 };
 
@@ -46,7 +47,7 @@ export function CampaignGenerator({
   defaultDealershipName,
 }: CampaignGeneratorProps) {
   const [history, setHistory] = useState(initialHistory);
-  const [activeGeneration, setActiveGeneration] = useState<AiGeneration | null>(
+  const [activeGeneration, setActiveGeneration] = useState<Campaign | null>(
     initialHistory[0] ?? null,
   );
   const [editedOutputs, setEditedOutputs] =
@@ -104,7 +105,7 @@ export function CampaignGenerator({
     }
   }, [saveState.generation]);
 
-  function handleSelectGeneration(generation: AiGeneration) {
+  function handleSelectGeneration(generation: Campaign) {
     setActiveGeneration(generation);
     setEditedOutputs(generation.outputsJson);
     setActiveTab("results");
@@ -193,6 +194,14 @@ export function CampaignGenerator({
                     ) : null}
                     {saveState.error ? (
                       <p className="text-sm text-destructive">{saveState.error}</p>
+                    ) : null}
+                    {activeGeneration ? (
+                      <Link
+                        href={`/dashboard/campaigns/${activeGeneration.id}`}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        View saved campaign
+                      </Link>
                     ) : null}
                   </div>
 

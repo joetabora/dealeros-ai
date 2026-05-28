@@ -1,3 +1,4 @@
+import { getDealershipMemoryProfile } from "@/lib/campaigns/memory/repository";
 import { generateCampaign } from "@/lib/demo-ai";
 import type {
   CampaignGeneratorInput,
@@ -49,7 +50,13 @@ function simulateGenerationDelay() {
 
 export async function generateCampaignContent(
   input: CampaignGeneratorInput,
+  userId?: string,
 ): Promise<CampaignGeneratorOutputs> {
+  const memory =
+    userId && input.dealershipName
+      ? await getDealershipMemoryProfile(userId, input.dealershipName)
+      : undefined;
+
   await simulateGenerationDelay();
-  return fromDemoOutput(generateCampaign(toDemoInput(input)));
+  return fromDemoOutput(generateCampaign(toDemoInput(input), memory));
 }

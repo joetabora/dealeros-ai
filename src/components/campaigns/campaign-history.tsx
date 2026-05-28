@@ -1,12 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { History } from "lucide-react";
 
 import {
   getCampaignTypeLabel,
 } from "@/lib/campaigns/validation";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,12 +16,12 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import type { AiGeneration } from "@/types/campaign";
+import type { Campaign } from "@/types/campaign";
 
 type CampaignHistoryProps = {
-  generations: AiGeneration[];
+  generations: Campaign[];
   activeId?: string;
-  onSelect: (generation: AiGeneration) => void;
+  onSelect: (generation: Campaign) => void;
   className?: string;
 };
 
@@ -48,7 +48,10 @@ export function CampaignHistory({
           <CardTitle className="text-base">Previous generations</CardTitle>
         </div>
         <CardDescription>
-          Reopen saved campaign packages and copy what you need.
+          Reopen saved campaign packages and copy what you need.{" "}
+          <Link href="/dashboard/campaigns" className="text-primary hover:underline">
+            View all history
+          </Link>
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -63,36 +66,45 @@ export function CampaignHistory({
                 const isActive = generation.id === activeId;
 
                 return (
-                  <Button
+                  <div
                     key={generation.id}
-                    type="button"
-                    variant="ghost"
-                    onClick={() => onSelect(generation)}
                     className={cn(
-                      "h-auto w-full flex-col items-start gap-2 rounded-xl border px-3 py-3 text-left",
+                      "rounded-xl border px-3 py-3 transition-colors",
                       isActive
-                        ? "border-primary/40 bg-primary/10 hover:bg-primary/10"
+                        ? "border-primary/40 bg-primary/10"
                         : "border-border/50 bg-background/30 hover:bg-background/60",
                     )}
                   >
-                    <div className="flex w-full items-start justify-between gap-2">
-                      <span className="font-medium">{generation.dealershipName}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(generation.createdAt)}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary">
-                        {getCampaignTypeLabel(generation.campaignType)}
-                      </Badge>
-                      <Badge
-                        variant="secondary"
-                        className="bg-primary/10 text-primary"
-                      >
-                        {generation.inputsJson.platform.toUpperCase()}
-                      </Badge>
-                    </div>
-                  </Button>
+                    <button
+                      type="button"
+                      onClick={() => onSelect(generation)}
+                      className="w-full text-left"
+                    >
+                      <div className="flex w-full items-start justify-between gap-2">
+                        <span className="font-medium">{generation.dealershipName}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDate(generation.createdAt)}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Badge variant="secondary">
+                          {getCampaignTypeLabel(generation.campaignType)}
+                        </Badge>
+                        <Badge
+                          variant="secondary"
+                          className="bg-primary/10 text-primary"
+                        >
+                          {generation.inputsJson.platform.toUpperCase()}
+                        </Badge>
+                      </div>
+                    </button>
+                    <Link
+                      href={`/dashboard/campaigns/${generation.id}`}
+                      className="mt-2 inline-block text-xs text-primary hover:underline"
+                    >
+                      Open detail
+                    </Link>
+                  </div>
                 );
               })}
             </div>
