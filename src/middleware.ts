@@ -1,30 +1,13 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 
-import { SESSION_COOKIE_NAME } from "@/lib/auth/constants";
+import { updateSession } from "@/lib/supabase/middleware";
 
-const protectedRoutes = ["/dashboard"];
-
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const isProtected = protectedRoutes.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`),
-  );
-
-  if (!isProtected) {
-    return NextResponse.next();
-  }
-
-  const session = request.cookies.get(SESSION_COOKIE_NAME);
-
-  if (!session) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  return NextResponse.next();
+export async function middleware(request: NextRequest) {
+  return updateSession(request);
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

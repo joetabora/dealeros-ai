@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-import { signInAction } from "@/app/(auth)/login/actions";
-import { Button } from "@/components/ui/button";
+import { LoginForm } from "@/components/auth/login-form";
 import {
   Card,
   CardContent,
@@ -10,15 +10,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { siteConfig } from "@/config/site";
+import { getSession } from "@/lib/auth/session";
 
 type LoginPageProps = {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string; error?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const { redirect: redirectTo } = await searchParams;
+  const session = await getSession();
+
+  if (session) {
+    redirect("/dashboard");
+  }
+
+  const { redirect: redirectTo, error } = await searchParams;
 
   return (
     <Card className="border-border/60 bg-card/60 shadow-xl backdrop-blur-sm">
@@ -29,40 +35,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={signInAction} className="space-y-4">
-          {redirectTo ? (
-            <input type="hidden" name="redirect" value={redirectTo} />
-          ) : null}
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
-              Work email
-            </label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@dealership.com"
-              defaultValue="jordan@metroautogroup.com"
-              required
-            />
+        {error ? (
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {error}
           </div>
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              Password
-            </label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              defaultValue="demo-password"
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full">
-            Continue to dashboard
-          </Button>
-        </form>
+        ) : null}
+        <LoginForm redirectTo={redirectTo} />
       </CardContent>
       <CardFooter className="justify-center text-sm text-muted-foreground">
         <span>

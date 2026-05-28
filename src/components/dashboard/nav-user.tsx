@@ -1,8 +1,10 @@
 "use client";
 
-import { ChevronsUpDown, LogOut, Settings, UserRound } from "lucide-react";
+import { ChevronsUpDown, Settings, UserRound } from "lucide-react";
 
-import { signOutAction } from "@/app/(auth)/login/actions";
+import { signOutAction } from "@/lib/auth/actions";
+
+import { SignOutMenuItem } from "@/components/auth/sign-out-button";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -102,13 +104,7 @@ export function NavUser({ session }: NavUserProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <form action={signOutAction}>
-              <DropdownMenuItem
-                variant="destructive"
-                render={<button type="submit" className="w-full" />}
-              >
-                <LogOut />
-                Sign out
-              </DropdownMenuItem>
+              <SignOutMenuItem />
             </form>
           </DropdownMenuContent>
         </DropdownMenu>
