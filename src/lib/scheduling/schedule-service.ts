@@ -1,6 +1,11 @@
 import { revalidatePath } from "next/cache";
 
 import {
+  recordEventCampaignAnalytics,
+  recordLegacyCampaignAnalytics,
+  recordMarketingCampaignAnalytics,
+} from "@/lib/analytics/service";
+import {
   buildCampaignScheduleItems,
   resolveCampaignAnchorDate,
 } from "@/lib/scheduling/adapters/campaign";
@@ -14,7 +19,7 @@ import {
 } from "@/lib/scheduling/adapters/marketing";
 import { insertScheduledActions } from "@/lib/scheduling/repository";
 import { assignScheduleTimestamps } from "@/lib/scheduling/timing-engine";
-import type { CampaignGeneratorOutputs } from "@/types/campaign";
+import type { CampaignGeneratorInput, CampaignGeneratorOutputs } from "@/types/campaign";
 import type { DealershipEvent } from "@/types/event";
 import type {
   FullMarketingCampaignOutput,
@@ -25,6 +30,7 @@ import type { ScheduledMarketingAction } from "@/types/scheduling";
 function revalidateCalendarRoutes() {
   revalidatePath("/dashboard/calendar");
   revalidatePath("/dashboard/calendar/preview");
+  revalidatePath("/dashboard/analytics");
 }
 
 export async function scheduleFromMarketingCampaign({
@@ -47,6 +53,15 @@ export async function scheduleFromMarketingCampaign({
 
   const saved = await insertScheduledActions({ userId, actions: resolved });
   revalidateCalendarRoutes();
+
+  await recordMarketingCampaignAnalytics({
+    userId,
+    input,
+    output: outputs,
+    campaignId,
+    scheduledActions: saved,
+  });
+
   return saved;
 }
 
@@ -71,6 +86,13 @@ export async function scheduleFromEvent({
 
   const saved = await insertScheduledActions({ userId, actions: resolved });
   revalidateCalendarRoutes();
+
+  await recordEventCampaignAnalytics({
+    userId,
+    event,
+    scheduledActions: saved,
+  });
+
   return saved;
 }
 
@@ -79,11 +101,13 @@ export async function scheduleFromCampaignGenerator({
   dealershipName,
   campaignId,
   outputs,
+  input,
 }: {
   userId: string;
   dealershipName: string;
   campaignId: string;
   outputs: CampaignGeneratorOutputs;
+  input: CampaignGeneratorInput;
 }): Promise<ScheduledMarketingAction[]> {
   const items = buildCampaignScheduleItems(outputs);
   const resolved = assignScheduleTimestamps(items, {
@@ -94,6 +118,14 @@ export async function scheduleFromCampaignGenerator({
 
   const saved = await insertScheduledActions({ userId, actions: resolved });
   revalidateCalendarRoutes();
+
+  await recordLegacyCampaignAnalytics({
+    userId,
+    input,
+    campaignId,
+    scheduledActions: saved,
+  });
+
   return saved;
 }
 

@@ -33,6 +33,7 @@ function getActionErrorMessage(error: unknown) {
 function revalidateEventRoutes(eventId?: string) {
   revalidatePath("/dashboard/events");
   revalidatePath("/dashboard/calendar");
+  revalidatePath("/dashboard/analytics");
 
   if (eventId) {
     revalidatePath(`/dashboard/events/${eventId}`);

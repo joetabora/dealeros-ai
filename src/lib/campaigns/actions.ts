@@ -36,6 +36,7 @@ function revalidateCampaignRoutes() {
   revalidatePath("/dashboard/campaigns");
   revalidatePath("/dashboard/campaigns/new");
   revalidatePath("/dashboard/calendar");
+  revalidatePath("/dashboard/analytics");
 }
 
 export async function generateCampaignAction(
@@ -64,6 +65,7 @@ export async function generateCampaignAction(
       dealershipName: input.dealershipName,
       campaignId: generation.id,
       outputs,
+      input,
     });
 
     revalidateCampaignRoutes();

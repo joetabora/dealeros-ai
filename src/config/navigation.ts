@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   CalendarDays,
   CalendarRange,
   Handshake,
@@ -34,6 +35,13 @@ export const dashboardNavigation: NavSection[] = [
         href: "/dashboard/calendar",
         icon: CalendarRange,
         description: "Auto-scheduled marketing timeline across every channel",
+      },
+      {
+        title: "Analytics",
+        href: "/dashboard/analytics",
+        icon: BarChart3,
+        description: "ROI estimates, performance ranking, and what worked insights",
+        badge: "Intel",
       },
       {
         title: "Live Demo",

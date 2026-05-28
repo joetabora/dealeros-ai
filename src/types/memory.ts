@@ -3,7 +3,8 @@ export type DealershipMemoryType =
   | "successful_campaign_style"
   | "audience_insight"
   | "event_patterns"
-  | "generation_weights";
+  | "generation_weights"
+  | "performance_insights";
 
 export type PreferredToneMemory = {
   tone: string;
