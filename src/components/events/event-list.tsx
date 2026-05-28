@@ -1,4 +1,5 @@
-import { CalendarDays } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Megaphone } from "lucide-react";
 
 import {
   formatEventDate,
@@ -36,38 +37,53 @@ export function EventList({ events, className }: EventListProps) {
             <div className="space-y-1">
               <h3 className="text-lg font-medium">No events scheduled yet</h3>
               <p className="max-w-md text-sm text-muted-foreground">
-                Create your first dealership event using the form. It will appear
-                here instantly and persist in Supabase.
+                Schedule an event and DealerOS instantly builds a full promotion
+                pack — pre-event, countdown, day-of, and follow-up content.
               </p>
             </div>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-3">
-          {events.map((event) => (
-            <Card
-              key={event.id}
-              className="border-border/60 bg-card/40 transition-colors hover:border-primary/20 hover:bg-card/70"
-            >
-              <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-2">
-                <div className="space-y-1">
-                  <CardTitle className="text-base">{event.eventName}</CardTitle>
-                  <CardDescription>{event.dealershipName}</CardDescription>
-                </div>
-                <span className="shrink-0 text-xs font-medium text-primary">
-                  {formatEventDate(event.eventDate)}
-                </span>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Badge variant="secondary">
-                  {getEventTypeLabel(event.eventType)}
-                </Badge>
-                <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
-                  {event.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+          {events.map((event) => {
+            const promotionCount = event.promotionPack?.items.length ?? 0;
+
+            return (
+              <Link
+                key={event.id}
+                href={`/dashboard/events/${event.id}`}
+                className="block"
+              >
+                <Card className="border-border/60 bg-card/40 transition-colors hover:border-primary/30 hover:bg-card/70">
+                  <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-2">
+                    <div className="space-y-1">
+                      <CardTitle className="text-base">{event.eventName}</CardTitle>
+                      <CardDescription>{event.dealershipName}</CardDescription>
+                    </div>
+                    <span className="shrink-0 text-xs font-medium text-primary">
+                      {formatEventDate(event.eventDate)}
+                    </span>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary">
+                        {getEventTypeLabel(event.eventType)}
+                      </Badge>
+                      {promotionCount > 0 ? (
+                        <Badge className="bg-primary/15 text-primary">
+                          <Megaphone className="mr-1 size-3" />
+                          {promotionCount} promotions
+                        </Badge>
+                      ) : null}
+                    </div>
+                    <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
+                      {event.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

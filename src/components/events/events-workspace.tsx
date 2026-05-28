@@ -1,11 +1,13 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import Link from "next/link";
 
 import { EventForm } from "@/components/events/event-form";
 import { EventList } from "@/components/events/event-list";
 import { ScheduleEventButton } from "@/components/events/schedule-event-button";
 import { createEventAction } from "@/lib/events/actions";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -42,7 +44,10 @@ export function EventsWorkspace({
         ...current.filter((event) => event.id !== state.event!.id),
       ]);
       setFormKey((current) => current + 1);
-      setSuccessMessage(`"${state.event.eventName}" is on the calendar.`);
+      const promotionCount = state.event.promotionPack?.items.length ?? 0;
+      setSuccessMessage(
+        `"${state.event.eventName}" is live with ${promotionCount} promotion assets ready to send.`,
+      );
     }
   }, [state.event]);
 
@@ -58,8 +63,8 @@ export function EventsWorkspace({
         <CardHeader>
           <CardTitle>Schedule Event</CardTitle>
           <CardDescription>
-            Plan activations for {dealershipName}. Events save to your account
-            and show up in the list immediately.
+            Plan activations for {dealershipName}. Every event automatically
+            generates a full promotion pack — no extra steps required.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -78,9 +83,21 @@ export function EventsWorkspace({
             {successMessage ? (
               <div
                 role="status"
-                className="rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary"
+                className="space-y-3 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-primary"
               >
-                {successMessage}
+                <p>{successMessage}</p>
+                {state.event ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="w-full"
+                    render={
+                      <Link href={`/dashboard/events/${state.event.id}`} />
+                    }
+                  >
+                    View promotion pack
+                  </Button>
+                ) : null}
               </div>
             ) : null}
 
@@ -93,7 +110,7 @@ export function EventsWorkspace({
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Upcoming events</h2>
           <p className="text-sm text-muted-foreground">
-            Newest events first — sorted by event date.
+            Click an event to view its full promotion pack.
           </p>
         </div>
         <EventList events={events} />

@@ -11,7 +11,7 @@ export function ScheduleEventButton() {
   return (
     <Button type="submit" className="w-full" disabled={pending}>
       <CalendarPlus />
-      {pending ? "Scheduling event..." : "Schedule Event"}
+      {pending ? "Building promotion pack..." : "Schedule Event"}
     </Button>
   );
 }

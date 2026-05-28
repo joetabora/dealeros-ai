@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DealershipEvent, EventInput, EventType } from "@/types/event";
+import type {
+  DealershipEvent,
+  EventInput,
+  EventPromotionPack,
+  EventType,
+} from "@/types/event";
 
 type EventRow = {
   id: string;
@@ -10,6 +15,7 @@ type EventRow = {
   description: string;
   event_date: string;
   created_at: string;
+  promotion_pack_json: EventPromotionPack | null;
 };
 
 function mapRow(row: EventRow): DealershipEvent {
@@ -22,6 +28,7 @@ function mapRow(row: EventRow): DealershipEvent {
     description: row.description,
     eventDate: row.event_date,
     createdAt: row.created_at,
+    promotionPack: row.promotion_pack_json,
   };
 }
 
@@ -42,14 +49,32 @@ export async function listEvents(limit = 50): Promise<DealershipEvent[]> {
   return (data as EventRow[]).map(mapRow);
 }
 
+export async function getEvent(id: string): Promise<DealershipEvent | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ? mapRow(data as EventRow) : null;
+}
+
 export async function createEvent({
   userId,
   dealershipName,
   input,
+  promotionPack,
 }: {
   userId: string;
   dealershipName: string;
   input: EventInput;
+  promotionPack?: EventPromotionPack;
 }): Promise<DealershipEvent> {
   const supabase = await createClient();
 
@@ -62,6 +87,7 @@ export async function createEvent({
       event_type: input.eventType,
       description: input.description,
       event_date: input.eventDate,
+      promotion_pack_json: promotionPack ?? null,
     })
     .select("*")
     .single();
@@ -71,4 +97,49 @@ export async function createEvent({
   }
 
   return mapRow(data as EventRow);
+}
+
+export async function updateEventPromotionPack(
+  id: string,
+  promotionPack: EventPromotionPack,
+): Promise<DealershipEvent> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("events")
+    .update({ promotion_pack_json: promotionPack })
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return mapRow(data as EventRow);
+}
+
+export async function saveEventPromotionPackItem({
+  eventId,
+  itemId,
+  content,
+}: {
+  eventId: string;
+  itemId: string;
+  content: string;
+}): Promise<DealershipEvent> {
+  const event = await getEvent(eventId);
+
+  if (!event?.promotionPack) {
+    throw new Error("Promotion pack not found for this event.");
+  }
+
+  const nextPack: EventPromotionPack = {
+    ...event.promotionPack,
+    items: event.promotionPack.items.map((item) =>
+      item.id === itemId ? { ...item, content } : item,
+    ),
+  };
+
+  return updateEventPromotionPack(eventId, nextPack);
 }

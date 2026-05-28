@@ -2,21 +2,68 @@
 
 import { revalidatePath } from "next/cache";
 
-import { createEvent } from "@/lib/events/repository";
+import { getDealershipMemoryProfile } from "@/lib/campaigns/memory/repository";
+import { syncEventMemory } from "@/lib/events/memory";
+import { generateEventPromotionPack } from "@/lib/events/promotion-engine";
+import {
+  createEvent,
+  saveEventPromotionPackItem,
+  updateEventPromotionPack,
+} from "@/lib/events/repository";
 import { parseEventInput } from "@/lib/events/validation";
 import { requireSession } from "@/lib/auth/session";
 import type { EventFormState, EventInput } from "@/types/event";
 
 function getActionErrorMessage(error: unknown) {
   if (error instanceof Error) {
-    if (error.message.includes("events")) {
-      return "Unable to save event. Confirm the Supabase events migration is applied.";
+    if (
+      error.message.includes("events") ||
+      error.message.includes("promotion_pack")
+    ) {
+      return "Unable to save event. Confirm the Supabase events migrations are applied.";
     }
 
     return error.message;
   }
 
   return "Something went wrong. Please try again.";
+}
+
+function revalidateEventRoutes(eventId?: string) {
+  revalidatePath("/dashboard/events");
+
+  if (eventId) {
+    revalidatePath(`/dashboard/events/${eventId}`);
+  }
+}
+
+async function createEventWithPromotion({
+  userId,
+  dealershipName,
+  input,
+}: {
+  userId: string;
+  dealershipName: string;
+  input: EventInput;
+}) {
+  const memory = await getDealershipMemoryProfile(userId, dealershipName);
+
+  const draftEvent = await createEvent({
+    userId,
+    dealershipName,
+    input,
+  });
+
+  const promotionPack = generateEventPromotionPack(draftEvent, memory);
+  const event = await updateEventPromotionPack(draftEvent.id, promotionPack);
+
+  await syncEventMemory({
+    userId,
+    dealershipName,
+    event,
+  });
+
+  return event;
 }
 
 export async function createEventAction(
@@ -26,13 +73,13 @@ export async function createEventAction(
   try {
     const session = await requireSession();
     const input = parseEventInput(formData);
-    const event = await createEvent({
+    const event = await createEventWithPromotion({
       userId: session.user.id,
       dealershipName: session.dealer.name,
       input,
     });
 
-    revalidatePath("/dashboard/events");
+    revalidateEventRoutes(event.id);
     return { success: true, event };
   } catch (error) {
     return { error: getActionErrorMessage(error) };
@@ -44,14 +91,39 @@ export async function createEventFromInputs(
 ): Promise<EventFormState> {
   try {
     const session = await requireSession();
-    const event = await createEvent({
+    const event = await createEventWithPromotion({
       userId: session.user.id,
       dealershipName: session.dealer.name,
       input: inputs,
     });
 
-    revalidatePath("/dashboard/events");
+    revalidateEventRoutes(event.id);
     return { success: true, event };
+  } catch (error) {
+    return { error: getActionErrorMessage(error) };
+  }
+}
+
+export async function updatePromotionItemAction(
+  eventId: string,
+  itemId: string,
+  content: string,
+) {
+  try {
+    await requireSession();
+
+    if (!content.trim()) {
+      return { error: "Content cannot be empty." };
+    }
+
+    const event = await saveEventPromotionPackItem({
+      eventId,
+      itemId,
+      content: content.trim(),
+    });
+
+    revalidateEventRoutes(eventId);
+    return { success: true as const, event };
   } catch (error) {
     return { error: getActionErrorMessage(error) };
   }
