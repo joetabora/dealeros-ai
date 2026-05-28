@@ -6,6 +6,7 @@ import { Handshake, Sparkles, Wand2, CalendarRange } from "lucide-react";
 
 import { CampaignResults } from "@/components/campaigns/campaign-results";
 import { CopyButton } from "@/components/campaigns/copy-button";
+import { ConversionPrompt } from "@/components/conversion/conversion-prompt";
 import { DemoHistoryPreview } from "@/components/demo/demo-history-preview";
 import { DemoImpactPreview } from "@/components/demo/demo-impact-preview";
 import { DemoMemoryInsight } from "@/components/demo/demo-memory-insight";
@@ -18,6 +19,7 @@ import {
   generateDemoCampaignPackAction,
   type DemoCampaignPack,
 } from "@/lib/demo/actions";
+import { recordDemoInteractionAction } from "@/lib/onboarding/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +40,7 @@ const STEPS = [
 export function DemoExperience() {
   const [selectedId, setSelectedId] = useState(DEMO_DEALERSHIPS[0]!.id);
   const [pack, setPack] = useState<DemoCampaignPack | null>(null);
+  const [showConversion, setShowConversion] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -63,6 +66,8 @@ export function DemoExperience() {
       }
 
       setPack(result.pack);
+      setShowConversion(true);
+      void recordDemoInteractionAction();
     });
   }
 
@@ -173,6 +178,8 @@ export function DemoExperience() {
 
           {pack ? (
             <div className="space-y-6">
+              {showConversion ? <ConversionPrompt variant="demo" /> : null}
+
               <DemoImpactPreview impact={pack.dealership.impact} />
 
               <Card className="border-border/60 bg-card/50">

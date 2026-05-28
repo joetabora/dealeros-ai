@@ -1,9 +1,19 @@
 import { LeadsWorkspace } from "@/components/leads/leads-workspace";
+import { FunnelTracker } from "@/components/conversion/funnel-tracker";
+import { ValueMomentBanner } from "@/components/conversion/value-moment";
 import { PageContainer, PageHeader } from "@/components/layout/page-shell";
 import { getLeadsDashboardAction } from "@/lib/leads/actions";
+import { requireSession } from "@/lib/auth/session";
+import { getOnboardingState } from "@/lib/onboarding/repository";
 
 export default async function LeadsPage() {
+  const session = await requireSession();
   const result = await getLeadsDashboardAction();
+  const onboarding = await getOnboardingState({
+    userId: session.user.id,
+    dealershipId: session.tenant.dealershipId,
+    dealershipName: session.tenant.dealershipName,
+  });
 
   if (result.error || !result.leads || !result.summary) {
     return (
@@ -22,11 +32,18 @@ export default async function LeadsPage() {
 
   return (
     <PageContainer>
+      <FunnelTracker stage="attachment" />
       <PageHeader
         title="Leads"
-        description="Every campaign interaction becomes a structured lead — captured automatically, ready for follow-up and conversion."
+        description="Every campaign interaction becomes a contact — captured automatically, ready for follow-up."
       />
-      <LeadsWorkspace leads={result.leads} summary={result.summary} />
+      <div className="space-y-6">
+        <ValueMomentBanner
+          momentKey="lead_capture"
+          alreadySeen={onboarding.valueMomentsSeen.includes("lead_capture")}
+        />
+        <LeadsWorkspace leads={result.leads} summary={result.summary} />
+      </div>
     </PageContainer>
   );
 }

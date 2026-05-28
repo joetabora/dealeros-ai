@@ -2,8 +2,8 @@ import { MarketingEngine } from "@/components/marketing/marketing-engine";
 import { PendingApprovalBanner } from "@/components/approvals/pending-approval-banner";
 import { PageContainer, PageHeader } from "@/components/layout/page-shell";
 import { listPendingApprovals } from "@/lib/approval-system/repository";
-import { listMarketingCampaigns } from "@/lib/marketing/repository";
 import { requireSession } from "@/lib/auth/session";
+import { listMarketingCampaigns } from "@/lib/marketing/repository";
 import type { MarketingCampaign } from "@/types/marketing";
 
 export default async function MarketingPage() {
@@ -23,8 +23,8 @@ export default async function MarketingPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="One-Click Marketing"
-        description="Enter one event or promotion idea and generate a complete dealership marketing campaign — strategy, social, SMS, email, timeline, and revenue CTAs."
+        title="Campaigns"
+        description="Enter one idea — get social posts, texts, emails, and your posting schedule in seconds."
       />
       <div className="space-y-6">
         <PendingApprovalBanner count={pendingApprovalCount} />

@@ -1,5 +1,6 @@
 import { CalendarWorkspace } from "@/components/calendar/calendar-workspace";
 import { PendingApprovalBanner } from "@/components/approvals/pending-approval-banner";
+import { FunnelTracker } from "@/components/conversion/funnel-tracker";
 import { PageContainer, PageHeader } from "@/components/layout/page-shell";
 import { listApprovals } from "@/lib/approval-system/repository";
 import { listScheduledActions } from "@/lib/scheduling/repository";
@@ -34,9 +35,10 @@ export default async function CalendarPage() {
 
   return (
     <PageContainer>
+      <FunnelTracker stage="dependence" />
       <PageHeader
-        title="Marketing Calendar"
-        description="Scheduled marketing runs across Meta, SMS, and email when approved and due — you stay in control at every step."
+        title="Auto-Posting Schedule"
+        description="See when posts, texts, and emails go out — your auto-posting system across every channel."
       />
       <div className="space-y-6">
         <PendingApprovalBanner count={pendingApprovalCount} />

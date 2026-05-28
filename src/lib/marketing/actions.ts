@@ -17,6 +17,8 @@ import {
 } from "@/lib/marketing/repository";
 import { parseMarketingInput } from "@/lib/marketing/validation";
 import { scheduleFromMarketingCampaign } from "@/lib/scheduling/schedule-service";
+import { recordFunnelStageAction } from "@/lib/conversion/actions";
+import { patchOnboardingState, getOnboardingState } from "@/lib/onboarding/repository";
 import { requireSession } from "@/lib/auth/session";
 import type {
   FullMarketingCampaignOutput,
@@ -138,6 +140,26 @@ export async function generateFullCampaignAction(
     });
 
     revalidateMarketingRoutes(campaign.id);
+
+    await recordFunnelStageAction("activation");
+
+    const onboarding = await getOnboardingState({
+      userId: session.user.id,
+      dealershipId: session.tenant.dealershipId,
+      dealershipName: input.dealershipName,
+    });
+
+    if (!onboarding.valueMomentsSeen.includes("first_campaign")) {
+      await patchOnboardingState({
+        userId: session.user.id,
+        dealershipId: session.tenant.dealershipId,
+        dealershipName: input.dealershipName,
+        patch: {
+          valueMomentsSeen: [...onboarding.valueMomentsSeen, "first_campaign"],
+        },
+      });
+    }
+
     return { campaign };
   } catch (error) {
     return { error: getActionErrorMessage(error) };

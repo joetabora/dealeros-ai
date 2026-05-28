@@ -25,8 +25,8 @@ export default async function AutopilotPage() {
     return (
       <PageContainer>
         <PageHeader
-          title="Marketing Autopilot"
-          description="Self-improving recommendations and weekly plans based on your campaign performance."
+          title="Next Best Actions"
+          description="Self-improving recommendations and weekly plans based on what's working at your store."
         />
         <p className="text-sm text-muted-foreground">
           Unable to load autopilot. Confirm Supabase migrations are applied and generate
@@ -39,7 +39,7 @@ export default async function AutopilotPage() {
   return (
     <PageContainer>
       <PageHeader
-        title="Marketing Autopilot"
+        title="Next Best Actions"
         description="It tells you exactly what to do next — analyze performance, recommend campaigns, and plan your week automatically."
       />
       <FeatureGate tenant={session.tenant} feature="autopilot">

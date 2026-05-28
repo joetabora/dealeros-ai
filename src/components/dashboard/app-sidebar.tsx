@@ -3,9 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { dashboardNavigation } from "@/config/navigation";
+import {
+  dashboardNavigation,
+  isPrimaryNavHref,
+} from "@/config/navigation";
 import { BrandMark } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +24,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import type { Session } from "@/types/auth";
+import { cn } from "@/lib/utils";
 
 import { NavUser } from "./nav-user";
 
@@ -37,6 +42,18 @@ export function AppSidebar({ session }: AppSidebarProps) {
       </SidebarHeader>
 
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent className="px-2 pt-2">
+            <Button
+              size="lg"
+              className="w-full justify-start shadow-sm"
+              render={<Link href="/dashboard/marketing" />}
+            >
+              Generate Campaign
+            </Button>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         {dashboardNavigation.map((section) => (
           <SidebarGroup key={section.label ?? section.items[0]?.href}>
             {section.label ? (
@@ -49,12 +66,16 @@ export function AppSidebar({ session }: AppSidebarProps) {
                     pathname === item.href ||
                     (item.href !== "/dashboard" &&
                       pathname.startsWith(`${item.href}/`));
+                  const isPrimary = isPrimaryNavHref(item.href);
 
                   return (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
                         isActive={isActive}
                         tooltip={item.title}
+                        className={cn(
+                          isPrimary && !isActive && "font-medium",
+                        )}
                         render={<Link href={item.href} />}
                       >
                         <item.icon />
@@ -62,7 +83,12 @@ export function AppSidebar({ session }: AppSidebarProps) {
                         {item.badge ? (
                           <Badge
                             variant="secondary"
-                            className="ml-auto bg-primary/15 text-[10px] text-primary"
+                            className={cn(
+                              "ml-auto text-[10px]",
+                              item.badge === "Generate"
+                                ? "bg-primary/20 text-primary"
+                                : "bg-primary/15 text-primary",
+                            )}
                           >
                             {item.badge}
                           </Badge>

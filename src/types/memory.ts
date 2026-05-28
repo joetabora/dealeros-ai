@@ -7,7 +7,8 @@ export type DealershipMemoryType =
   | "performance_insights"
   | "autopilot_state"
   | "lead_insights"
-  | "crm_insights";
+  | "crm_insights"
+  | "onboarding_state";
 
 export type PreferredToneMemory = {
   tone: string;
