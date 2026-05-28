@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Sparkles, Wand2 } from "lucide-react";
+import Link from "next/link";
+import { Handshake, Sparkles, Wand2 } from "lucide-react";
 
 import { CampaignResults } from "@/components/campaigns/campaign-results";
 import { CopyButton } from "@/components/campaigns/copy-button";
@@ -192,6 +193,29 @@ export function DemoExperience() {
               </Card>
 
               <CampaignResults outputs={pack.outputs} editable={false} />
+
+              <Card className="border-primary/20 bg-gradient-to-br from-primary/10 via-card/60 to-card/40">
+                <CardContent className="flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:justify-between sm:text-left">
+                  <div>
+                    <p className="font-semibold">Ready to close the deal?</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Open the Closing Kit with ROI estimates, objection
+                      responses, and a one-click proposal for {selected.name}.
+                    </p>
+                  </div>
+                  <Button
+                    size="lg"
+                    render={
+                      <Link
+                        href={`/dashboard/closing-kit?dealership=${selected.id}&excerpt=${encodeURIComponent(pack.outputs.facebookPost.slice(0, 240))}`}
+                      />
+                    }
+                  >
+                    <Handshake />
+                    Open Closing Kit
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           ) : (
             <Card className="border-dashed border-border/70 bg-card/20">

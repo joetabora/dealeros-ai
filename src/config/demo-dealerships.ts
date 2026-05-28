@@ -1,4 +1,5 @@
 import type { CampaignGeneratorInput } from "@/types/campaign";
+import type { RoiCalculatorInput } from "@/types/closing-kit";
 import type { DealershipMemoryProfile } from "@/types/memory";
 
 export type DemoImpactMetrics = {
@@ -23,6 +24,7 @@ export type DemoDealershipProfile = {
   input: CampaignGeneratorInput;
   memory: DealershipMemoryProfile;
   impact: DemoImpactMetrics;
+  roiDefaults: RoiCalculatorInput;
   memoryBullets: string[];
   historySamples: DemoHistorySample[];
 };
@@ -59,6 +61,12 @@ export const DEMO_DEALERSHIPS: DemoDealershipProfile[] = [
       engagementLift: 42,
       attendanceLift: 28,
       followUpLift: 35,
+    },
+    roiDefaults: {
+      monthlyFootTraffic: 920,
+      eventAttendance: 185,
+      leadConversionRate: 9,
+      serviceVolume: 280,
     },
     memoryBullets: [
       "Prefers energetic, hype-driven weekend event messaging",
@@ -114,6 +122,12 @@ export const DEMO_DEALERSHIPS: DemoDealershipProfile[] = [
       attendanceLift: 22,
       followUpLift: 48,
     },
+    roiDefaults: {
+      monthlyFootTraffic: 640,
+      eventAttendance: 75,
+      leadConversionRate: 7,
+      serviceVolume: 520,
+    },
     memoryBullets: [
       "Responds best to trust-based service messaging",
       "Seasonal discount framing outperforms generic promos",
@@ -168,6 +182,12 @@ export const DEMO_DEALERSHIPS: DemoDealershipProfile[] = [
       attendanceLift: 19,
       followUpLift: 41,
     },
+    roiDefaults: {
+      monthlyFootTraffic: 1100,
+      eventAttendance: 95,
+      leadConversionRate: 11,
+      serviceVolume: 310,
+    },
     memoryBullets: [
       "Inventory urgency and limited-time framing drive conversions",
       "SMS blasts outperform email for same-day showroom traffic",
@@ -214,6 +234,12 @@ export const DEMO_DEALERSHIPS: DemoDealershipProfile[] = [
       engagementLift: 29,
       attendanceLift: 24,
       followUpLift: 52,
+    },
+    roiDefaults: {
+      monthlyFootTraffic: 480,
+      eventAttendance: 60,
+      leadConversionRate: 6,
+      serviceVolume: 390,
     },
     memoryBullets: [
       "Reactivation campaigns perform best with premium, personal tone",

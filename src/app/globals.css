@@ -128,3 +128,13 @@
     @apply font-sans;
   }
 }
+
+@media print {
+  body {
+    @apply bg-white text-black;
+  }
+
+  .proposal-snapshot {
+    @apply max-w-none;
+  }
+}

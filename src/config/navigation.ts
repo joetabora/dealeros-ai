@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  Handshake,
   LayoutDashboard,
   Megaphone,
   RefreshCw,
@@ -25,6 +26,13 @@ export const dashboardNavigation: NavSection[] = [
         icon: Sparkles,
         description: "Instant sales demo — no setup required",
         badge: "Demo",
+      },
+      {
+        title: "Closing Kit",
+        href: "/dashboard/closing-kit",
+        icon: Handshake,
+        description: "ROI calculator, objections, and proposal generator",
+        badge: "Sales",
       },
       {
         title: "Campaigns",

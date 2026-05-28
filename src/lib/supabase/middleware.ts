@@ -5,7 +5,11 @@ import { getSupabaseEnv } from "@/lib/supabase/env";
 
 const PROTECTED_PREFIX = "/dashboard";
 const AUTH_ROUTES = ["/login"];
-const PUBLIC_DASHBOARD_ROUTES = ["/dashboard/demo"];
+const PUBLIC_DASHBOARD_ROUTES = [
+  "/dashboard/demo",
+  "/dashboard/closing-kit",
+  "/dashboard/proposal",
+];
 
 function isPublicDashboardRoute(pathname: string) {
   return PUBLIC_DASHBOARD_ROUTES.some(
