@@ -1,4 +1,5 @@
 import type { CampaignAnalyticsRecord } from "@/types/analytics";
+import type { CrmPipelineWithLead } from "@/types/crm";
 import type { DealershipLead, LeadSource } from "@/types/leads";
 import type { DealershipMemoryProfile } from "@/types/memory";
 import type {
@@ -287,6 +288,70 @@ function buildLeadShouldChange(
   return items;
 }
 
+function computeCrmMetrics(entries: CrmPipelineWithLead[]) {
+  const active = entries.filter(
+    (entry) => entry.stage !== "converted" && entry.stage !== "lost",
+  );
+  const converted = entries.filter((entry) => entry.stage === "converted").length;
+  const grouped = {
+    new: entries.filter((entry) => entry.stage === "new").length,
+    contacted: entries.filter((entry) => entry.stage === "contacted").length,
+    qualified: entries.filter((entry) => entry.stage === "qualified").length,
+    appointment_set: entries.filter((entry) => entry.stage === "appointment_set").length,
+  };
+
+  let crmDropOffStage: string | null = null;
+  if (grouped.contacted > grouped.qualified && grouped.contacted >= 2) {
+    crmDropOffStage = "contacted → qualified";
+  } else if (grouped.new > grouped.contacted && grouped.new >= 2) {
+    crmDropOffStage = "new → contacted";
+  } else if (grouped.qualified > grouped.appointment_set && grouped.qualified >= 2) {
+    crmDropOffStage = "qualified → appointment";
+  }
+
+  return {
+    crmActivePipeline: active.length,
+    crmConversionRate:
+      entries.length > 0 ? Math.round((converted / entries.length) * 100) : 0,
+    crmDropOffStage,
+  };
+}
+
+function buildCrmWhatsWorking(entries: CrmPipelineWithLead[]) {
+  const items: string[] = [];
+  const highQuality = entries.filter((entry) => entry.priority === "high").length;
+
+  if (highQuality >= 2) {
+    items.push(`${highQuality} high-priority leads in your CRM pipeline — focus on those first.`);
+  }
+
+  const dueToday = entries.filter((entry) => entry.urgencyLevel === "today").length;
+  if (dueToday >= 1) {
+    items.push(`${dueToday} lead${dueToday === 1 ? "" : "s"} need follow-up today.`);
+  }
+
+  return items;
+}
+
+function buildCrmShouldChange(entries: CrmPipelineWithLead[], crmDropOffStage: string | null) {
+  const items: string[] = [];
+
+  if (entries.length === 0) {
+    items.push("Capture leads from campaigns first — CRM pipeline auto-creates from every lead.");
+  }
+
+  if (crmDropOffStage) {
+    items.push(`Pipeline drop-off at ${crmDropOffStage} — tighten same-day contact and follow-up timing.`);
+  }
+
+  const stalledNew = entries.filter((entry) => entry.stage === "new").length;
+  if (stalledNew >= 3) {
+    items.push(`${stalledNew} new leads waiting — call or text today before they go cold.`);
+  }
+
+  return items;
+}
+
 function defaultAnalysis(dealershipName: string): PerformanceAnalysis {
   return {
     dealershipName,
@@ -313,6 +378,9 @@ function defaultAnalysis(dealershipName: string): PerformanceAnalysis {
     totalCapturedLeads: 0,
     topLeadSource: null,
     leadConversionRate: 0,
+    crmActivePipeline: 0,
+    crmConversionRate: 0,
+    crmDropOffStage: null,
   };
 }
 
@@ -322,17 +390,23 @@ export function analyzePerformanceHistory({
   memory,
   scheduledActions,
   leads = [],
+  pipeline = [],
 }: {
   dealershipName: string;
   analytics: CampaignAnalyticsRecord[];
   memory: DealershipMemoryProfile;
   scheduledActions: ScheduledMarketingAction[];
   leads?: DealershipLead[];
+  pipeline?: CrmPipelineWithLead[];
 }): PerformanceAnalysis {
   const dealershipLeads = leads.filter(
     (lead) => lead.dealershipName === dealershipName,
   );
+  const dealershipPipeline = pipeline.filter(
+    (entry) => entry.dealershipName === dealershipName,
+  );
   const leadMetrics = computeLeadMetrics(dealershipLeads);
+  const crmMetrics = computeCrmMetrics(dealershipPipeline);
 
   const dealershipAnalytics = analytics.filter(
     (record) => record.dealershipName === dealershipName,
@@ -345,13 +419,16 @@ export function analyzePerformanceHistory({
     return {
       ...defaultAnalysis(dealershipName),
       ...leadMetrics,
+      ...crmMetrics,
       whatsWorking: [
         ...defaultAnalysis(dealershipName).whatsWorking,
         ...buildLeadWhatsWorking(leadMetrics, dealershipLeads),
+        ...buildCrmWhatsWorking(dealershipPipeline),
       ].slice(0, 3),
       shouldChange: [
         ...defaultAnalysis(dealershipName).shouldChange,
         ...buildLeadShouldChange(leadMetrics, countPlatforms(dealershipActions)),
+        ...buildCrmShouldChange(dealershipPipeline, crmMetrics.crmDropOffStage),
       ].slice(0, 3),
     };
   }
@@ -393,12 +470,15 @@ export function analyzePerformanceHistory({
     whatsWorking: [
       ...buildWhatsWorking(topPerformingTypes, memory, trend),
       ...buildLeadWhatsWorking(leadMetrics, dealershipLeads),
+      ...buildCrmWhatsWorking(dealershipPipeline),
     ].slice(0, 3),
     whatsDeclining: buildWhatsDeclining(topPerformingTypes, trend),
     shouldChange: [
       ...buildShouldChange(topPerformingTypes, platformMix, trend),
       ...buildLeadShouldChange(leadMetrics, platformMix),
+      ...buildCrmShouldChange(dealershipPipeline, crmMetrics.crmDropOffStage),
     ].slice(0, 3),
     ...leadMetrics,
+    ...crmMetrics,
   };
 }

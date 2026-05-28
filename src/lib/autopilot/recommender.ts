@@ -81,6 +81,10 @@ function pickMarketingType(analysis: PerformanceAnalysis): MarketingCampaignType
     return "sale";
   }
 
+  if (analysis.crmActivePipeline >= 3 && analysis.crmConversionRate < 20) {
+    return "service";
+  }
+
   if (analysis.totalCapturedLeads >= 2 && analysis.leadConversionRate >= 20) {
     const topRaw = analysis.topPerformingTypes[0]?.campaignType;
     if (topRaw && TYPE_TO_MARKETING[topRaw]) {
@@ -185,7 +189,11 @@ function buildReasoning(
   }
 
   if (analysis.totalCapturedLeads >= 3) {
-    return `${analysis.totalCapturedLeads} leads captured so far — prioritize ${formatTypeLabel(campaignType)} campaigns with the same high-converting CTA formats.`;
+    return `${analysis.totalCapturedLeads} leads captured — prioritize ${formatTypeLabel(campaignType)} campaigns with lead-capturable CTAs that feed your CRM pipeline.`;
+  }
+
+  if (analysis.crmDropOffStage) {
+    return `CRM drop-off detected at ${analysis.crmDropOffStage}. Run campaigns that generate high-intent SMS BOOK replies, then follow up same-day.`;
   }
 
   if (memory.preferredTone) {

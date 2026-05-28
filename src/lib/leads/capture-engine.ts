@@ -1,5 +1,7 @@
+import { syncCrmMemory } from "@/lib/crm/memory";
+import { getPipelineByLeadId, insertPipelineFromLead, listPipelineWithLeads } from "@/lib/crm/repository";
 import { syncLeadMemory } from "@/lib/leads/memory";
-import { insertLead } from "@/lib/leads/repository";
+import { insertLead, listLeads } from "@/lib/leads/repository";
 import type {
   IntentLevel,
   LeadCaptureInput,
@@ -79,6 +81,27 @@ export async function captureLead(input: LeadCaptureInput) {
     lead,
     intentLevel: input.intentLevel ?? inferIntentLevel(input),
   });
+
+  const existingPipeline = await getPipelineByLeadId(lead.id);
+  if (!existingPipeline) {
+    await insertPipelineFromLead({
+      userId: input.userId,
+      lead,
+      intentLevel: input.intentLevel ?? inferIntentLevel(input),
+      engagementType: input.engagementType,
+    });
+  }
+
+  try {
+    const pipelineEntries = await listPipelineWithLeads(await listLeads(200), 200);
+    await syncCrmMemory({
+      userId: input.userId,
+      dealershipName: input.dealershipName,
+      entries: pipelineEntries,
+    });
+  } catch {
+    // CRM memory sync is best-effort when migration is not yet applied.
+  }
 
   return lead;
 }

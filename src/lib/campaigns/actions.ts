@@ -39,6 +39,7 @@ function revalidateCampaignRoutes() {
   revalidatePath("/dashboard/analytics");
   revalidatePath("/dashboard/autopilot");
   revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard/crm");
   revalidatePath("/dashboard/approvals");
 }
 

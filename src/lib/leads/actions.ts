@@ -17,6 +17,7 @@ import type { LeadStatus } from "@/types/leads";
 
 function revalidateLeadRoutes() {
   revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard/crm");
   revalidatePath("/dashboard/analytics");
   revalidatePath("/dashboard/autopilot");
   revalidatePath("/dashboard/marketing");

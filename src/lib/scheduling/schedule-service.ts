@@ -39,6 +39,7 @@ function revalidateCalendarRoutes() {
   revalidatePath("/dashboard/analytics");
   revalidatePath("/dashboard/autopilot");
   revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard/crm");
   revalidatePath("/dashboard/approvals");
   revalidatePath("/dashboard/marketing");
   revalidatePath("/dashboard/events");

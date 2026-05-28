@@ -14,6 +14,7 @@ function revalidateExecutionRoutes() {
   revalidatePath("/dashboard/calendar/preview");
   revalidatePath("/dashboard/autopilot");
   revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard/crm");
 }
 
 export async function runExecutionForUserAction(): Promise<{

@@ -36,6 +36,9 @@ export type PerformanceAnalysis = {
   totalCapturedLeads: number;
   topLeadSource: string | null;
   leadConversionRate: number;
+  crmActivePipeline: number;
+  crmConversionRate: number;
+  crmDropOffStage: string | null;
 };
 
 export type CampaignRecommendation = {

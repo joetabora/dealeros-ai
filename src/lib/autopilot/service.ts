@@ -11,6 +11,7 @@ import {
   listDealershipMemory,
 } from "@/lib/campaigns/memory/repository";
 import { listLeads } from "@/lib/leads/repository";
+import { listPipelineWithLeads } from "@/lib/crm/repository";
 import { listScheduledActions } from "@/lib/scheduling/repository";
 import type { AutopilotDashboard, WeeklyMarketingPlan } from "@/types/autopilot";
 
@@ -43,12 +44,15 @@ export async function buildAutopilotDashboard({
     listLeads(200),
   ]);
 
+  const pipeline = await listPipelineWithLeads(leads, 200);
+
   const analysis = analyzePerformanceHistory({
     dealershipName,
     analytics,
     memory,
     scheduledActions,
     leads,
+    pipeline,
   });
 
   const recommendation = recommendNextCampaign({ analysis, memory });

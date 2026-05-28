@@ -30,6 +30,7 @@ function revalidateAutopilotRoutes() {
   revalidatePath("/dashboard/marketing");
   revalidatePath("/dashboard/analytics");
   revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard/crm");
   revalidatePath("/dashboard/calendar");
 }
 

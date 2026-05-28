@@ -36,6 +36,7 @@ function revalidateEventRoutes(eventId?: string) {
   revalidatePath("/dashboard/analytics");
   revalidatePath("/dashboard/autopilot");
   revalidatePath("/dashboard/leads");
+  revalidatePath("/dashboard/crm");
   revalidatePath("/dashboard/approvals");
 
   if (eventId) {

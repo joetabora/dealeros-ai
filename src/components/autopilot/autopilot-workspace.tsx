@@ -53,6 +53,11 @@ export function AutopilotWorkspace({ initialDashboard }: AutopilotWorkspaceProps
                   {dashboard.analysis.leadConversionRate}% lead conversion
                 </Badge>
               ) : null}
+              {dashboard.analysis.crmActivePipeline > 0 ? (
+                <Badge variant="secondary">
+                  {dashboard.analysis.crmActivePipeline} in CRM pipeline
+                </Badge>
+              ) : null}
             </div>
             <p className="text-sm text-muted-foreground">
               {dashboard.analysis.engagementTrendDetail}

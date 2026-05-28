@@ -4,6 +4,7 @@ import {
   CalendarDays,
   CalendarRange,
   Handshake,
+  Kanban,
   LayoutDashboard,
   Megaphone,
   RefreshCw,
@@ -52,6 +53,13 @@ export const dashboardNavigation: NavSection[] = [
         icon: Users,
         description: "Captured contacts from campaigns, SMS, email, and events",
         badge: "Revenue",
+      },
+      {
+        title: "CRM Lite",
+        href: "/dashboard/crm",
+        icon: Kanban,
+        description: "Simple sales pipeline — follow-ups, priorities, and closing actions",
+        badge: "Close",
       },
       {
         title: "Autopilot",
