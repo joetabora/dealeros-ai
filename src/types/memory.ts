@@ -4,7 +4,8 @@ export type DealershipMemoryType =
   | "audience_insight"
   | "event_patterns"
   | "generation_weights"
-  | "performance_insights";
+  | "performance_insights"
+  | "autopilot_state";
 
 export type PreferredToneMemory = {
   tone: string;

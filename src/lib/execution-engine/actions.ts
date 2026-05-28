@@ -12,6 +12,7 @@ import type { ExecutionRunSummary } from "@/lib/execution-engine/types";
 function revalidateExecutionRoutes() {
   revalidatePath("/dashboard/calendar");
   revalidatePath("/dashboard/calendar/preview");
+  revalidatePath("/dashboard/autopilot");
 }
 
 export async function runExecutionForUserAction(): Promise<{

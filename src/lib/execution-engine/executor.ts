@@ -1,3 +1,4 @@
+import { runAutopilotForExecutedDealerships } from "@/lib/autopilot/service";
 import { getProviderForPlatform } from "@/lib/execution-engine/providers";
 import type {
   ExecutionMetadata,
@@ -56,8 +57,11 @@ export async function executeDueActions(
     results: [],
   };
 
+  const affectedDealerships = new Set<string>();
+
   for (const action of actions) {
     summary.processed += 1;
+    affectedDealerships.add(action.dealershipName);
 
     const provider = getProviderForPlatform(action.platform);
     const metadata = buildMetadata(action, simulate);
@@ -117,6 +121,13 @@ export async function executeDueActions(
         error: message,
       });
     }
+  }
+
+  if (userId && summary.processed > 0) {
+    await runAutopilotForExecutedDealerships({
+      userId,
+      dealershipNames: [...affectedDealerships],
+    });
   }
 
   return summary;

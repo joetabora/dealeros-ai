@@ -50,6 +50,7 @@ function revalidateMarketingRoutes(campaignId?: string) {
   revalidatePath("/dashboard/campaigns");
   revalidatePath("/dashboard/calendar");
   revalidatePath("/dashboard/analytics");
+  revalidatePath("/dashboard/autopilot");
 
   if (campaignId) {
     revalidatePath(`/dashboard/marketing/${campaignId}`);

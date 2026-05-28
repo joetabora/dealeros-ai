@@ -1,3 +1,4 @@
+import { runAutopilotCycle } from "@/lib/autopilot/service";
 import { syncAnalyticsMemory } from "@/lib/analytics/memory";
 import { insertCampaignAnalytics } from "@/lib/analytics/repository";
 import {
@@ -59,6 +60,12 @@ async function persistAnalysis({
       dealershipName: context.dealershipName,
       context,
       metrics,
+    });
+
+    await runAutopilotCycle({
+      userId,
+      dealershipName: context.dealershipName,
+      softUpdate: true,
     });
 
     return record;

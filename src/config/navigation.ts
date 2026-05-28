@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Bot,
   CalendarDays,
   CalendarRange,
   Handshake,
@@ -42,6 +43,13 @@ export const dashboardNavigation: NavSection[] = [
         icon: BarChart3,
         description: "ROI estimates, performance ranking, and what worked insights",
         badge: "Intel",
+      },
+      {
+        title: "Autopilot",
+        href: "/dashboard/autopilot",
+        icon: Bot,
+        description: "Self-improving recommendations and automatic weekly marketing plans",
+        badge: "AI",
       },
       {
         title: "Live Demo",

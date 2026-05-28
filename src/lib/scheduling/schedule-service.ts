@@ -31,6 +31,7 @@ function revalidateCalendarRoutes() {
   revalidatePath("/dashboard/calendar");
   revalidatePath("/dashboard/calendar/preview");
   revalidatePath("/dashboard/analytics");
+  revalidatePath("/dashboard/autopilot");
 }
 
 export async function scheduleFromMarketingCampaign({

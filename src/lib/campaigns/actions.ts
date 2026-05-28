@@ -37,6 +37,7 @@ function revalidateCampaignRoutes() {
   revalidatePath("/dashboard/campaigns/new");
   revalidatePath("/dashboard/calendar");
   revalidatePath("/dashboard/analytics");
+  revalidatePath("/dashboard/autopilot");
 }
 
 export async function generateCampaignAction(
